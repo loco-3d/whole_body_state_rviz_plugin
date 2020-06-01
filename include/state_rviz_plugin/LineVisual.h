@@ -1,3 +1,11 @@
+///////////////////////////////////////////////////////////////////////////////
+// BSD 3-Clause License
+//
+// Copyright (C) 2018-2020, University of Edinburgh
+// Copyright note valid unless otherwise stated in individual files.
+// All rights reserved.
+///////////////////////////////////////////////////////////////////////////////
+
 #ifndef STATE_RVIZ_PLUGIN_LINE_VISUAL_H
 #define STATE_RVIZ_PLUGIN_LINE_VISUAL_H
 
