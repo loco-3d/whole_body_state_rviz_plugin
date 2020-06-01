@@ -74,7 +74,7 @@ private Q_SLOTS:
   void updateCoMStyle();
   void updateCoMColorAndAlpha();
   void updateCoMArrowGeometry();
-  // void updateCoPColorAndAlpha();
+  void updateCoPColorAndAlpha();
   // void updateCMPColorAndAlpha();
   // void updateICPColorAndAlpha();
   void updateGRFColorAndAlpha();
@@ -124,9 +124,9 @@ private:
   rviz::FloatProperty *com_shaft_radius_property_;
   rviz::FloatProperty *com_shaft_length_property_;
 
-  // rviz::ColorProperty* cop_color_property_;
-  // rviz::FloatProperty* cop_alpha_property_;
-  // rviz::FloatProperty* cop_radius_property_;
+  rviz::ColorProperty *cop_color_property_;
+  rviz::FloatProperty *cop_alpha_property_;
+  rviz::FloatProperty *cop_radius_property_;
 
   // rviz::ColorProperty* cmp_color_property_;
   // rviz::FloatProperty* cmp_alpha_property_;

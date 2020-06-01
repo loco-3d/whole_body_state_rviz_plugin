@@ -32,8 +32,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
 
   // Category Groups
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
-  // cop_category_ = new rviz::Property("Center Of Pressure", QVariant(), "",
-  // this); icp_category_ = new rviz::Property("Instantaneous Capture Point",
+  cop_category_ =
+      new rviz::Property("Center Of Pressure", QVariant(), "", this);
+  //    icp_category_ = new rviz::Property("Instantaneous Capture Point",
   // QVariant(), "", this); cmp_category_ = new rviz::Property("Centroidal
   // Momentum Pivot", QVariant(), "", this);
   grf_category_ = new rviz::Property("Contact Forces", QVariant(), "", this);
@@ -73,22 +74,17 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       com_category_, SLOT(updateCoMArrowGeometry()), this);
 
   // CoP properties
-  // cop_color_property_ =
-  // 		new rviz::ColorProperty("Color", QColor(204, 41, 204),
-  // 								"Color of a
-  // point", cop_category_, SLOT(updateCoPColorAndAlpha()), this);
-
-  // cop_alpha_property_ =
-  // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully transparent, 1.0
-  // is fully opaque.",
-  // cop_category_, SLOT(updateCoPColorAndAlpha()), this);
-  // cop_alpha_property_->setMin(0); cop_alpha_property_->setMax(1);
-
-  // cop_radius_property_ =
-  // 		new rviz::FloatProperty("Radius", 0.04,
-  // 								"Radius of a
-  // point", cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+  cop_color_property_ = new rviz::ColorProperty(
+      "Color", QColor(204, 41, 204), "Color of a point", cop_category_,
+      SLOT(updateCoPColorAndAlpha()), this);
+  cop_alpha_property_ = new rviz::FloatProperty(
+      "Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
+      cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+  cop_alpha_property_->setMin(0);
+  cop_alpha_property_->setMax(1);
+  cop_radius_property_ = new rviz::FloatProperty(
+      "Radius", 0.04, "Radius of a point", cop_category_,
+      SLOT(updateCoPColorAndAlpha()), this);
 
   // Instantaneous Capture Point properties
   // icp_color_property_ =
@@ -98,10 +94,10 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
 
   // icp_alpha_property_ =
   // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully transparent, 1.0
-  // is fully opaque.",
-  // icp_category_, SLOT(updateICPColorAndAlpha()), this);
-  // icp_alpha_property_->setMin(0); icp_alpha_property_->setMax(1);
+  // 								"0 is fully
+  // transparent, 1.0 is fully opaque.", icp_category_,
+  // SLOT(updateICPColorAndAlpha()), this); icp_alpha_property_->setMin(0);
+  // icp_alpha_property_->setMax(1);
 
   // icp_radius_property_ =
   // 		new rviz::FloatProperty("Radius", 0.04,
@@ -116,10 +112,10 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
 
   // cmp_alpha_property_ =
   // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully transparent, 1.0
-  // is fully opaque.",
-  // cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
-  // cmp_alpha_property_->setMin(0); cmp_alpha_property_->setMax(1);
+  // 								"0 is fully
+  // transparent, 1.0 is fully opaque.", cmp_category_,
+  // SLOT(updateCMPColorAndAlpha()), this); cmp_alpha_property_->setMin(0);
+  // cmp_alpha_property_->setMax(1);
 
   // cmp_radius_property_ =
   // 		new rviz::FloatProperty("Radius", 0.04,
@@ -305,19 +301,16 @@ void WholeBodyStateDisplay::updateCoMArrowGeometry() {
   context_->queueRender();
 }
 
-// void WholeBodyStateDisplay::updateCoPColorAndAlpha()
-// {
-// 	float radius = cop_radius_property_->getFloat();
-// 	Ogre::ColourValue color = cop_color_property_->getOgreColor();
-// 	color.a = cop_alpha_property_->getFloat();
-
-// 	if (cop_visual_) {
-// 		cop_visual_->setColor(color.r, color.g, color.b, color.a);
-// 		cop_visual_->setRadius(radius);
-// 	}
-
-// 	context_->queueRender();
-// }
+void WholeBodyStateDisplay::updateCoPColorAndAlpha() {
+  const float &radius = cop_radius_property_->getFloat();
+  Ogre::ColourValue color = cop_color_property_->getOgreColor();
+  color.a = cop_alpha_property_->getFloat();
+  if (cop_visual_) {
+    cop_visual_->setColor(color.r, color.g, color.b, color.a);
+    cop_visual_->setRadius(radius);
+  }
+  context_->queueRender();
+}
 
 // void WholeBodyStateDisplay::updateICPColorAndAlpha()
 // {
@@ -421,45 +414,6 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   if (!initialized_model_)
     return;
 
-  // // Getting the base velocity
-  // unsigned int num_base_joints = msg_->base.size();
-  // dwl::rbd::Vector6d base_pos = dwl::rbd::Vector6d::Zero();
-  // dwl::rbd::Vector6d base_vel = dwl::rbd::Vector6d::Zero();
-  // for (unsigned int i = 0; i < num_base_joints; i++) {
-  // 	dwl_msgs::BaseState base = msg_->base[i];
-
-  // 	// Getting the base joint id
-  // 	unsigned int id = base.id;
-
-  // 	// Setting the base position
-  // 	base_pos(id) = base.position;
-
-  // 	// Setting the base velocity
-  // 	base_vel(id) = base.velocity;
-  // }
-
-  // // Getting the joint position and velocity
-  // unsigned int num_joints = msg_->joints.size();
-  // Eigen::VectorXd joint_pos = Eigen::VectorXd::Zero(num_joints);
-  // Eigen::VectorXd joint_vel = Eigen::VectorXd::Zero(num_joints);
-  // for (unsigned int i = 0; i < num_joints; i++) {
-  // 	dwl_msgs::JointState joint = msg_->joints[i];
-
-  // 	// Getting the joint name
-  // 	std::string name  = joint.name;
-
-  // 	// Getting the joint id
-  // 	unsigned int id = fbs_.getJointId(name);
-
-  // 	// Setting the joint position and velocity
-  // 	joint_pos(id) = joint.position;
-  // 	joint_vel(id) = joint.velocity;
-  // }
-
-  // // Getting the contact wrenches and positions
-  // dwl::rbd::BodyVectorXd contact_pos;
-  // dwl::rbd::BodyVector6d contact_for;
-
   // // Computing the center of mass position and velocity
   // dwl::rbd::Vector6d null_base_pos = dwl::rbd::Vector6d::Zero();
   // Eigen::Vector3d base_rpy = dwl::rbd::angularPart(base_pos);
@@ -468,10 +422,6 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   // 												  base_vel,
   // joint_vel); Eigen::Vector3d com_vel_B =
   // 		frame_tf_.fromWorldToBaseFrame(com_vel_W, base_rpy);
-
-  // // Computing the center of pressure position
-  // Eigen::Vector3d cop_pos;
-  // wdyn_.computeCenterOfPressure(cop_pos, contact_for, contact_pos);
 
   // // Computing the instantaneous capture point position
   // Eigen::Vector3d icp_pos;
@@ -498,68 +448,13 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   // Resetting the point visualizers
   com_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
   comd_visual_.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
-  // cop_visual_.reset(new PointVisual(context_->getSceneManager(),
-  // scene_node_)); icp_visual_.reset(new
-  // PointVisual(context_->getSceneManager(), scene_node_));
+  cop_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
+  //   icp_visual_.reset(new PointVisual(context_->getSceneManager(),
+  //   scene_node_));
   // cmp_visual_.reset(new PointVisual(context_->getSceneManager(),
   // scene_node_));
   support_visual_.reset(
       new PolygonVisual(context_->getSceneManager(), scene_node_));
-
-  // Defining the center of mass as Ogre::Vector3
-  Ogre::Vector3 com_point;
-  if (com_real_) {
-    com_point.x = msg_->centroidal.com_position.x;
-    com_point.y = msg_->centroidal.com_position.y;
-    com_point.z = msg_->centroidal.com_position.z;
-  } // else {
-  // 	Eigen::Vector3d cop_z = Eigen::Vector3d::Zero();
-  // 	cop_z(dwl::rbd::Z) = cop_pos(dwl::rbd::Z);
-  // 	Eigen::Vector3d rot_cop_z =
-  // 			dwl::math::getRotationMatrix(dwl::rbd::angularPart(base_pos)).transpose()
-  // * cop_z; 	com_point.x = com_pos(dwl::rbd::X) + rot_cop_z(dwl::rbd::X);
-  // 	com_point.y = com_pos(dwl::rbd::Y) + rot_cop_z(dwl::rbd::Y);
-  // 	com_point.z = cop_pos(dwl::rbd::Z);
-  // }
-
-  // Defining the center of mass velocity orientation
-  Eigen::Vector3d com_ref_dir = -Eigen::Vector3d::UnitZ();
-  Eigen::Vector3d com_vel(msg_->centroidal.com_velocity.x,
-                          msg_->centroidal.com_velocity.y,
-                          msg_->centroidal.com_velocity.z);
-  Eigen::Quaterniond com_q;
-  com_q.setFromTwoVectors(com_ref_dir, com_vel);
-  Ogre::Quaternion comd_for_orientation(com_q.w(), com_q.x(), com_q.y(),
-                                        com_q.z());
-
-  // Now set or update the contents of the chosen CoM visual
-  updateCoMColorAndAlpha();
-  if (std::isfinite(com_point.x) && std::isfinite(com_point.y) &&
-      std::isfinite(com_point.z)) {
-    com_visual_->setPoint(com_point);
-    com_visual_->setFramePosition(position);
-    com_visual_->setFrameOrientation(orientation);
-    const double &com_vel_norm = com_vel.norm();
-    const float &shaft_length =
-        com_shaft_length_property_->getFloat() * com_vel_norm;
-    const float &shaft_radius = com_shaft_radius_property_->getFloat();
-    float head_length = 0., head_radius = 0.;
-    if (com_vel_norm > 0.01) {
-      head_length = com_head_length_property_->getFloat();
-      head_radius = com_head_radius_property_->getFloat();
-    }
-    comd_visual_->setProperties(shaft_length, shaft_radius, head_length,
-                                head_radius);
-    comd_visual_->setArrow(com_point, comd_for_orientation);
-    comd_visual_->setFramePosition(position);
-    comd_visual_->setFrameOrientation(orientation);
-  }
-
-  // // Defining the center of pressure as Ogre::Vector3
-  // Ogre::Vector3 cop_point;
-  // cop_point.x = cop_pos(dwl::rbd::X);
-  // cop_point.y = cop_pos(dwl::rbd::Y);
-  // cop_point.z = cop_pos(dwl::rbd::Z);
 
   // // Defining the Instantaneous Capture Point as Ogre::Vector3
   // Ogre::Vector3 icp_point;
@@ -573,18 +468,6 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   // cmp_point.x = cmp_pos(dwl::rbd::X);
   // cmp_point.y = cmp_pos(dwl::rbd::Y);
   // cmp_point.z = cmp_pos(dwl::rbd::Z);
-
-  // // Now set or update the contents of the chosen CoP visual
-  // updateCoPColorAndAlpha();
-
-  // if (std::isfinite(cop_pos(dwl::rbd::X))
-  //     && std::isfinite(cop_pos(dwl::rbd::Y))
-  //     && std::isfinite(cop_pos(dwl::rbd::Z)))
-  // {
-  //     cop_visual_->setPoint(cop_point);
-  //     cop_visual_->setFramePosition(position);
-  //     cop_visual_->setFrameOrientation(orientation);
-  // }
 
   // // Now set or update the contents of the chosen Inst CP visual
   // updateICPColorAndAlpha();
@@ -612,6 +495,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   unsigned int num_contacts = msg_->contacts.size();
   grf_visual_.clear();
   cones_visual_.clear();
+  Eigen::Vector3d cop_pos = Eigen::Vector3d::Zero();
+  double total_force = 0;
   for (unsigned int i = 0; i < num_contacts; ++i) {
     const state_msgs::ContactState &contact = msg_->contacts[i];
     std::string name = contact.name;
@@ -625,7 +510,13 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     Eigen::Vector3d for_dir(contact.wrench.force.x, contact.wrench.force.y,
                             contact.wrench.force.z);
 
-    // Detecting active contacts
+    // Updating the center of pressure
+    cop_pos += contact.wrench.force.z *
+               Eigen::Vector3d(contact.pose.position.x, contact.pose.position.y,
+                               contact.pose.position.z);
+    total_force += contact.wrench.force.z;
+
+    // Building the support polygone
     if (for_dir.norm() > force_threshold_ && std::isfinite(contact_pos.x) &&
         std::isfinite(contact_pos.y) && std::isfinite(contact_pos.z)) {
       Eigen::Quaterniond for_q;
@@ -661,6 +552,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       support.push_back(contact_pos);
     }
 
+    // Building the friction cones
     Eigen::Vector3d cone_dir(contact.surface_normal.x, contact.surface_normal.y,
                              contact.surface_normal.z);
     friction_mu_ = contact.friction_coefficient;
@@ -687,6 +579,71 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       cone->setColor(color.r, color.g, color.b, color.a);
       cones_visual_.push_back(cone);
     }
+  }
+
+  // Building the CoP visual
+  cop_pos /= total_force;
+
+  // Defining the center of mass as Ogre::Vector3
+  Ogre::Vector3 com_point;
+  if (com_real_) {
+    com_point.x = msg_->centroidal.com_position.x;
+    com_point.y = msg_->centroidal.com_position.y;
+    com_point.z = msg_->centroidal.com_position.z;
+  } else {
+    Eigen::Vector3d cop_z = Eigen::Vector3d::Zero();
+    cop_z(2) = cop_pos(2);
+    pinocchio::SE3::Quaternion q(msg_->centroidal.base_orientation.w,
+                                 msg_->centroidal.base_orientation.x,
+                                 msg_->centroidal.base_orientation.y,
+                                 msg_->centroidal.base_orientation.z);
+    Eigen::Vector3d rot_cop_z = q.matrix() * cop_z;
+    com_point.x = msg_->centroidal.com_position.x + rot_cop_z(0);
+    com_point.y = msg_->centroidal.com_position.y + rot_cop_z(1);
+    com_point.z = cop_z(2);
+  }
+
+  // Defining the center of mass velocity orientation
+  Eigen::Vector3d com_ref_dir = -Eigen::Vector3d::UnitZ();
+  Eigen::Vector3d com_vel(msg_->centroidal.com_velocity.x,
+                          msg_->centroidal.com_velocity.y,
+                          msg_->centroidal.com_velocity.z);
+  Eigen::Quaterniond com_q;
+  com_q.setFromTwoVectors(com_ref_dir, com_vel);
+  Ogre::Quaternion comd_for_orientation(com_q.w(), com_q.x(), com_q.y(),
+                                        com_q.z());
+
+  // Now set or update the contents of the chosen CoM visual
+  updateCoMColorAndAlpha();
+  if (std::isfinite(com_point.x) && std::isfinite(com_point.y) &&
+      std::isfinite(com_point.z)) {
+    com_visual_->setPoint(com_point);
+    com_visual_->setFramePosition(position);
+    com_visual_->setFrameOrientation(orientation);
+    const double &com_vel_norm = com_vel.norm();
+    const float &shaft_length =
+        com_shaft_length_property_->getFloat() * com_vel_norm;
+    const float &shaft_radius = com_shaft_radius_property_->getFloat();
+    float head_length = 0., head_radius = 0.;
+    if (com_vel_norm > 0.01) {
+      head_length = com_head_length_property_->getFloat();
+      head_radius = com_head_radius_property_->getFloat();
+    }
+    comd_visual_->setProperties(shaft_length, shaft_radius, head_length,
+                                head_radius);
+    comd_visual_->setArrow(com_point, comd_for_orientation);
+    comd_visual_->setFramePosition(position);
+    comd_visual_->setFrameOrientation(orientation);
+  }
+
+  // Now set or update the contents of the chosen CoP visual
+  updateCoPColorAndAlpha();
+  if (std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) &&
+      std::isfinite(cop_pos(2))) {
+    Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
+    cop_visual_->setPoint(cop_point);
+    cop_visual_->setFramePosition(position);
+    cop_visual_->setFrameOrientation(orientation);
   }
 
   // Now set or update the contents of the chosen CoP visual
