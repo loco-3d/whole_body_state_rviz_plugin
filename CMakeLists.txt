@@ -67,21 +67,16 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES pinocchio #state_msgs #${PROJECT_NAME}
+  LIBRARIES pinocchio
   CATKIN_DEPENDS roscpp rviz)
 
 
-MESSAGE("------------${catkin_INCLUDE_DIRS}")
-MESSAGE("------------${state_msgs_EXPORTED_TARGETS}")
-MESSAGE("------------${pinocchio_LIBRARIES}")
 INCLUDE_DIRECTORIES(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-
 LINK_DIRECTORIES(${catkin_LIBRARY_DIRS}
                  ${Boost_LIBRARY_DIRS})
                  
 
 SET(SOURCE_FILES
-  # src/DisplayInterface.cpp
   src/PointVisual.cpp
   src/LineVisual.cpp
   src/ArrowVisual.cpp
@@ -89,8 +84,6 @@ SET(SOURCE_FILES
   src/WholeBodyStateDisplay.cpp
   # src/WholeBodyTrajectoryDisplay.cpp
   # src/ReducedTrajectoryDisplay.cpp
-  # src/TerrainMapDisplay.cpp
-  # src/ObstacleMapDisplay.cpp
   # src/FootstepRegionDisplay.cpp
   ${MOC_FILES})
 

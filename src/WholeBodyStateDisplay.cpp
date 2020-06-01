@@ -39,6 +39,8 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   grf_category_ = new rviz::Property("Contact Forces", QVariant(), "", this);
   support_category_ =
       new rviz::Property("Support Region", QVariant(), "", this);
+  friction_category_ =
+      new rviz::Property("Friction Cone", QVariant(), "", this);
 
   // CoM position and velocity properties
   com_style_property_ = new EnumProperty(
@@ -74,55 +76,55 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   // cop_color_property_ =
   // 		new rviz::ColorProperty("Color", QColor(204, 41, 204),
   // 								"Color of a
-  // point", 								cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+  // point", cop_category_, SLOT(updateCoPColorAndAlpha()), this);
 
   // cop_alpha_property_ =
   // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully transparent, 1.0 is fully
-  // opaque.", 								cop_category_, SLOT(updateCoPColorAndAlpha()), this);
-  // cop_alpha_property_->setMin(0);
-  // cop_alpha_property_->setMax(1);
+  // 								"0 is fully transparent, 1.0
+  // is fully opaque.",
+  // cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+  // cop_alpha_property_->setMin(0); cop_alpha_property_->setMax(1);
 
   // cop_radius_property_ =
   // 		new rviz::FloatProperty("Radius", 0.04,
   // 								"Radius of a
-  // point", 								cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+  // point", cop_category_, SLOT(updateCoPColorAndAlpha()), this);
 
   // Instantaneous Capture Point properties
   // icp_color_property_ =
   // 		new rviz::ColorProperty("Color", QColor(10, 41, 10),
   // 								"Color of a
-  // point", 								icp_category_, SLOT(updateICPColorAndAlpha()), this);
+  // point", icp_category_, SLOT(updateICPColorAndAlpha()), this);
 
   // icp_alpha_property_ =
   // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully transparent, 1.0 is fully
-  // opaque.", 								icp_category_, SLOT(updateICPColorAndAlpha()), this);
-  // icp_alpha_property_->setMin(0);
-  // icp_alpha_property_->setMax(1);
+  // 								"0 is fully transparent, 1.0
+  // is fully opaque.",
+  // icp_category_, SLOT(updateICPColorAndAlpha()), this);
+  // icp_alpha_property_->setMin(0); icp_alpha_property_->setMax(1);
 
   // icp_radius_property_ =
   // 		new rviz::FloatProperty("Radius", 0.04,
   // 								"Radius of a
-  // point", 								icp_category_, SLOT(updateICPColorAndAlpha()), this);
+  // point", icp_category_, SLOT(updateICPColorAndAlpha()), this);
 
   // CMP properties
   // cmp_color_property_ =
   // 		new rviz::ColorProperty("Color", QColor(200, 41, 10),
   // 								"Color of a
-  // point", 								cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+  // point", cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
 
   // cmp_alpha_property_ =
   // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully transparent, 1.0 is fully
-  // opaque.", 								cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
-  // cmp_alpha_property_->setMin(0);
-  // cmp_alpha_property_->setMax(1);
+  // 								"0 is fully transparent, 1.0
+  // is fully opaque.",
+  // cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+  // cmp_alpha_property_->setMin(0); cmp_alpha_property_->setMax(1);
 
   // cmp_radius_property_ =
   // 		new rviz::FloatProperty("Radius", 0.04,
   // 								"Radius of a
-  // point", 								cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+  // point", cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
 
   // GRF properties
   grf_color_property_ =
@@ -169,6 +171,19 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   support_force_threshold_property_ = new FloatProperty(
       "Force Threshold", 1.0, "Threshold for defining active contacts.",
       support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
+
+  // Friction cone properties
+  friction_cone_color_property_ = new ColorProperty(
+      "Color", QColor(255, 0, 127), "Color to draw the friction cone.",
+      friction_category_, SLOT(updateFrictionConeColorAndAlpha()), this);
+  friction_cone_alpha_property_ = new FloatProperty(
+      "Alpha", 0.5, "Amount of transparency to apply to the friction cone.",
+      friction_category_, SLOT(updateFrictionConeColorAndAlpha()), this);
+  friction_cone_alpha_property_->setMin(0);
+  friction_cone_alpha_property_->setMax(1);
+  friction_cone_length_property_ = new FloatProperty(
+      "Length", 0.2, "Length of the friction cone in m.", friction_category_,
+      SLOT(updateFrictionConeGeometry()), this);
 }
 
 WholeBodyStateDisplay::~WholeBodyStateDisplay() {}
@@ -203,6 +218,7 @@ void WholeBodyStateDisplay::fixedFrameChanged() {
 void WholeBodyStateDisplay::reset() {
   MFDClass::reset();
   grf_visual_.clear();
+  cones_visual_.clear();
 }
 
 void WholeBodyStateDisplay::load() {
@@ -369,6 +385,26 @@ void WholeBodyStateDisplay::updateSupportMeshColorAndAlpha() {
   color.a = support_mesh_alpha_property_->getFloat();
   if (support_visual_) {
     support_visual_->setMeshColor(color.r, color.g, color.b, color.a);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateFrictionConeColorAndAlpha() {
+  Ogre::ColourValue oc = friction_cone_color_property_->getOgreColor();
+  float alpha = friction_cone_alpha_property_->getFloat();
+  for (size_t i = 0; i < cones_visual_.size(); ++i) {
+    cones_visual_[i]->setColor(oc.r, oc.g, oc.b, alpha);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateFrictionConeGeometry() {
+  const float &cone_length = friction_cone_length_property_->getFloat();
+  double cone_width = 2.0 * cone_length * tan(friction_mu_ / sqrt(2.));
+  Ogre::Vector3 scale(cone_width, cone_length, cone_width);
+  for (size_t i = 0; i < cones_visual_.size(); ++i) {
+    cones_visual_[i]->setScale(scale);
+    ;
   }
   context_->queueRender();
 }
@@ -575,10 +611,9 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   std::vector<Ogre::Vector3> support;
   unsigned int num_contacts = msg_->contacts.size();
   grf_visual_.clear();
+  cones_visual_.clear();
   for (unsigned int i = 0; i < num_contacts; ++i) {
     const state_msgs::ContactState &contact = msg_->contacts[i];
-
-    // Getting the name
     std::string name = contact.name;
 
     // Getting the contact position
@@ -624,6 +659,33 @@ void WholeBodyStateDisplay::processWholeBodyState() {
         grf_visual_.push_back(arrow);
       }
       support.push_back(contact_pos);
+    }
+
+    Eigen::Vector3d cone_dir(contact.surface_normal.x, contact.surface_normal.y,
+                             contact.surface_normal.z);
+    friction_mu_ = contact.friction_coefficient;
+    if (for_dir.norm() > force_threshold_ && cone_dir.norm() != 0 &&
+        friction_mu_ != 0) {
+      Eigen::Vector3d cone_ref_dir = -Eigen::Vector3d::UnitY();
+      Eigen::Quaterniond cone_q;
+      cone_q.setFromTwoVectors(cone_ref_dir, cone_dir);
+      Ogre::Quaternion cone_orientation(cone_q.w(), cone_q.x(), cone_q.y(),
+                                        cone_q.z());
+      boost::shared_ptr<Shape> cone;
+      cone.reset(new rviz::Shape(rviz::Shape::Cone, context_->getSceneManager(),
+                                 scene_node_));
+      cone->setPosition(contact_pos);
+      cone->setOrientation(cone_orientation);
+
+      double displayed_range = friction_cone_length_property_->getFloat();
+      double cone_width = 2.0 * displayed_range * tan(friction_mu_ / sqrt(2.));
+      Ogre::Vector3 scale(cone_width, displayed_range, cone_width);
+      Ogre::ColourValue color = friction_cone_color_property_->getOgreColor();
+      color.a = friction_cone_alpha_property_->getFloat();
+      cone->setScale(scale);
+      cone->setOffset(Ogre::Vector3(0, -0.5, 0.));
+      cone->setColor(color.r, color.g, color.b, color.a);
+      cones_visual_.push_back(cone);
     }
   }
 

@@ -24,6 +24,7 @@ class EnumProperty;
 class ColorProperty;
 class FloatProperty;
 class IntProperty;
+class Shape;
 } // namespace rviz
 
 namespace state_rviz_plugin {
@@ -80,6 +81,8 @@ private Q_SLOTS:
   void updateGRFArrowGeometry();
   void updateSupportLineColorAndAlpha();
   void updateSupportMeshColorAndAlpha();
+  void updateFrictionConeColorAndAlpha();
+  void updateFrictionConeGeometry();
 
 private:
   void processWholeBodyState();
@@ -99,6 +102,7 @@ private:
   rviz::Property *icp_category_;
   rviz::Property *grf_category_;
   rviz::Property *support_category_;
+  rviz::Property *friction_category_;
 
   /** @brief Object for visualization of the data */
   boost::shared_ptr<PointVisual> com_visual_;
@@ -146,16 +150,25 @@ private:
   rviz::FloatProperty *support_mesh_alpha_property_;
   rviz::FloatProperty *support_force_threshold_property_;
 
+  rviz::ColorProperty *friction_cone_color_property_;
+  rviz::FloatProperty *friction_cone_alpha_property_;
+  rviz::FloatProperty *friction_cone_length_property_;
+
   /** @brief Whole-body dynamics */
   pinocchio::Model model_;
-  pinocchio::Data data_;
+  //   pinocchio::Data data_;
   // dwl::math::FrameTF frame_tf_;
+
+  std::vector<boost::shared_ptr<rviz::Shape>>
+      cones_visual_; //!< Handles actually drawing the cones
 
   /** @brief Force threshold for detecting active contacts */
   double force_threshold_;
 
   /** @brief Weight of the robot */
   double weight_;
+
+  double friction_mu_; //!< Friction coefficient
 
   /** @brief CoM style */
   enum CoMStyle { REAL, PROJECTED };
