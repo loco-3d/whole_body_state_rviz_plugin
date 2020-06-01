@@ -420,12 +420,13 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
   // Now set or update the contents of the chosen GRF visual
   std::vector<Ogre::Vector3> support;
-  unsigned int num_contacts = msg_->contacts.size();
+  size_t num_contacts = msg_->contacts.size();
+  size_t n_suppcontacts = 0;
   grf_visual_.clear();
   cones_visual_.clear();
   Eigen::Vector3d cop_pos = Eigen::Vector3d::Zero();
   Eigen::Vector3d total_force = Eigen::Vector3d::Zero();
-  for (unsigned int i = 0; i < num_contacts; ++i) {
+  for (size_t i = 0; i < num_contacts; ++i) {
     const state_msgs::ContactState &contact = msg_->contacts[i];
     std::string name = contact.name;
 
@@ -439,11 +440,16 @@ void WholeBodyStateDisplay::processWholeBodyState() {
                             contact.wrench.force.z);
 
     // Updating the center of pressure
-    cop_pos += contact.wrench.force.z *
-               Eigen::Vector3d(contact.pose.position.x, contact.pose.position.y,
-                               contact.pose.position.z);
-    total_force += Eigen::Vector3d(
-        contact.wrench.force.x, contact.wrench.force.y, contact.wrench.force.z);
+    if (contact.type == 0) {
+      n_suppcontacts += 1;
+      cop_pos +=
+          contact.wrench.force.z * Eigen::Vector3d(contact.pose.position.x,
+                                                   contact.pose.position.y,
+                                                   contact.pose.position.z);
+      total_force +=
+          Eigen::Vector3d(contact.wrench.force.x, contact.wrench.force.y,
+                          contact.wrench.force.z);
+    }
 
     // Building the support polygone
     if (for_dir.norm() > force_threshold_ && std::isfinite(contact_pos.x) &&
@@ -478,7 +484,9 @@ void WholeBodyStateDisplay::processWholeBodyState() {
           std::isfinite(head_length) && std::isfinite(head_radius)) {
         grf_visual_.push_back(arrow);
       }
-      support.push_back(contact_pos);
+      if (contact.type == 0) {
+        support.push_back(contact_pos);
+      }
     }
 
     // Building the friction cones
@@ -511,11 +519,13 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   }
 
   // Building the CoP visual
-  cop_pos /= total_force(2);
+  if (n_suppcontacts != 0) {
+    cop_pos /= total_force(2);
+  }
 
   // Defining the center of mass as Ogre::Vector3
   Ogre::Vector3 com_point;
-  if (com_real_) {
+  if (com_real_ || n_suppcontacts != 0) {
     com_point.x = msg_->centroidal.com_position.x;
     com_point.y = msg_->centroidal.com_position.y;
     com_point.z = msg_->centroidal.com_position.z;
@@ -566,7 +576,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   }
 
   // Now set or update the contents of the chosen CoP visual
-  if (num_contacts != 0) {
+  if (n_suppcontacts != 0) {
     cop_visual_.reset(
         new PointVisual(context_->getSceneManager(), scene_node_));
     icp_visual_.reset(
