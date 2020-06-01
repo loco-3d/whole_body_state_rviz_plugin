@@ -22,7 +22,7 @@ namespace state_rviz_plugin {
 
 WholeBodyStateDisplay::WholeBodyStateDisplay()
     : is_info_(false), initialized_model_(false), force_threshold_(0.),
-      weight_(0.), com_real_(true) {
+      weight_(0.), gravity_(9.81), com_real_(true) {
   // Robot properties
   robot_model_property_ =
       new StringProperty("Robot Description", "robot_description",
@@ -34,9 +34,10 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
   cop_category_ =
       new rviz::Property("Center Of Pressure", QVariant(), "", this);
-  //    icp_category_ = new rviz::Property("Instantaneous Capture Point",
-  // QVariant(), "", this); cmp_category_ = new rviz::Property("Centroidal
-  // Momentum Pivot", QVariant(), "", this);
+  icp_category_ =
+      new rviz::Property("Instantaneous Capture Point", QVariant(), "", this);
+  //    cmp_category_ = new rviz::Property("Centroidal Momentum Pivot",
+  //    QVariant(), "", this);
   grf_category_ = new rviz::Property("Contact Forces", QVariant(), "", this);
   support_category_ =
       new rviz::Property("Support Region", QVariant(), "", this);
@@ -87,22 +88,17 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       SLOT(updateCoPColorAndAlpha()), this);
 
   // Instantaneous Capture Point properties
-  // icp_color_property_ =
-  // 		new rviz::ColorProperty("Color", QColor(10, 41, 10),
-  // 								"Color of a
-  // point", icp_category_, SLOT(updateICPColorAndAlpha()), this);
-
-  // icp_alpha_property_ =
-  // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully
-  // transparent, 1.0 is fully opaque.", icp_category_,
-  // SLOT(updateICPColorAndAlpha()), this); icp_alpha_property_->setMin(0);
-  // icp_alpha_property_->setMax(1);
-
-  // icp_radius_property_ =
-  // 		new rviz::FloatProperty("Radius", 0.04,
-  // 								"Radius of a
-  // point", icp_category_, SLOT(updateICPColorAndAlpha()), this);
+  icp_color_property_ = new rviz::ColorProperty(
+      "Color", QColor(10, 41, 10), "Color of a point", icp_category_,
+      SLOT(updateICPColorAndAlpha()), this);
+  icp_alpha_property_ = new rviz::FloatProperty(
+      "Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
+      icp_category_, SLOT(updateICPColorAndAlpha()), this);
+  icp_alpha_property_->setMin(0);
+  icp_alpha_property_->setMax(1);
+  icp_radius_property_ = new rviz::FloatProperty(
+      "Radius", 0.04, "Radius of a point", icp_category_,
+      SLOT(updateICPColorAndAlpha()), this);
 
   // CMP properties
   // cmp_color_property_ =
@@ -247,8 +243,8 @@ void WholeBodyStateDisplay::load() {
   // Initializing the dynamics from the URDF model
   pinocchio::urdf::buildModelFromXML(robot_model_,
                                      pinocchio::JointModelFreeFlyer(), model_);
-  weight_ =
-      pinocchio::computeTotalMass(model_) * model_.gravity.linear().norm();
+  gravity_ = model_.gravity.linear().norm();
+  weight_ = pinocchio::computeTotalMass(model_) * gravity_;
   initialized_model_ = true;
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
 }
@@ -312,18 +308,16 @@ void WholeBodyStateDisplay::updateCoPColorAndAlpha() {
   context_->queueRender();
 }
 
-// void WholeBodyStateDisplay::updateICPColorAndAlpha()
-// {
-// 	float radius = icp_radius_property_->getFloat();
-// 	Ogre::ColourValue color = icp_color_property_->getOgreColor();
-// 	color.a = icp_alpha_property_->getFloat();
-// 	if (icp_visual_) {
-// 		icp_visual_->setColor(color.r, color.g, color.b, color.a);
-// 		icp_visual_->setRadius(radius);
-// 	}
-
-// 	context_->queueRender();
-// }
+void WholeBodyStateDisplay::updateICPColorAndAlpha() {
+  float radius = icp_radius_property_->getFloat();
+  Ogre::ColourValue color = icp_color_property_->getOgreColor();
+  color.a = icp_alpha_property_->getFloat();
+  if (icp_visual_) {
+    icp_visual_->setColor(color.r, color.g, color.b, color.a);
+    icp_visual_->setRadius(radius);
+  }
+  context_->queueRender();
+}
 
 // void WholeBodyStateDisplay::updateCMPColorAndAlpha()
 // {
@@ -448,19 +442,10 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   // Resetting the point visualizers
   com_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
   comd_visual_.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
-  cop_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
-  //   icp_visual_.reset(new PointVisual(context_->getSceneManager(),
-  //   scene_node_));
   // cmp_visual_.reset(new PointVisual(context_->getSceneManager(),
   // scene_node_));
   support_visual_.reset(
       new PolygonVisual(context_->getSceneManager(), scene_node_));
-
-  // // Defining the Instantaneous Capture Point as Ogre::Vector3
-  // Ogre::Vector3 icp_point;
-  // icp_point.x = icp_pos(dwl::rbd::X);
-  // icp_point.y = icp_pos(dwl::rbd::Y);
-  // icp_point.z = icp_pos(dwl::rbd::Z);
 
   // // Defining the Centroidal Moment Pivot as Ogre::Vector3
   // Ogre::Vector3 cmp_point;
@@ -469,16 +454,6 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   // cmp_point.y = cmp_pos(dwl::rbd::Y);
   // cmp_point.z = cmp_pos(dwl::rbd::Z);
 
-  // // Now set or update the contents of the chosen Inst CP visual
-  // updateICPColorAndAlpha();
-  // if (std::isfinite(icp_pos(dwl::rbd::X))
-  //     && std::isfinite(icp_pos(dwl::rbd::Y))
-  //     && std::isfinite(icp_pos(dwl::rbd::Z)))
-  // {
-  //     icp_visual_->setPoint(icp_point);
-  //     icp_visual_->setFramePosition(position);
-  //     icp_visual_->setFrameOrientation(orientation);
-  // }
   // // Now set or update the contents of the chosen CMP visual
   // updateCMPColorAndAlpha();
   // if (std::isfinite(cmp_pos(dwl::rbd::X))
@@ -637,13 +612,50 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   }
 
   // Now set or update the contents of the chosen CoP visual
-  updateCoPColorAndAlpha();
-  if (std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) &&
-      std::isfinite(cop_pos(2))) {
-    Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
-    cop_visual_->setPoint(cop_point);
-    cop_visual_->setFramePosition(position);
-    cop_visual_->setFrameOrientation(orientation);
+  if (num_contacts != 0) {
+    cop_visual_.reset(
+        new PointVisual(context_->getSceneManager(), scene_node_));
+    icp_visual_.reset(
+        new PointVisual(context_->getSceneManager(), scene_node_));
+
+    updateCoPColorAndAlpha();
+    if (std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) &&
+        std::isfinite(cop_pos(2))) {
+      Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
+      cop_visual_->setPoint(cop_point);
+      cop_visual_->setFramePosition(position);
+      cop_visual_->setFrameOrientation(orientation);
+    }
+
+    // Computing the ICP
+    double height = abs(msg_->centroidal.com_position.z - cop_pos(2));
+    double omega = sqrt(gravity_ / height);
+    Eigen::Vector3d com_pos = Eigen::Vector3d(msg_->centroidal.com_position.x,
+                                              msg_->centroidal.com_position.y,
+                                              msg_->centroidal.com_position.z);
+    Eigen::Vector3d icp_pos = com_pos + com_vel / omega;
+    icp_pos(2) = cop_pos(2);
+
+    // Now set or update the contents of the chosen Inst CP visual
+    updateICPColorAndAlpha();
+    if (std::isfinite(icp_pos(0)) && std::isfinite(icp_pos(1)) &&
+        std::isfinite(icp_pos(2))) {
+      Ogre::Vector3 icp_point(icp_pos(0), icp_pos(1), icp_pos(2));
+      icp_visual_->setPoint(icp_point);
+      icp_visual_->setFramePosition(position);
+      icp_visual_->setFrameOrientation(orientation);
+    }
+  } else {
+    if (cop_visual_) {
+      Ogre::ColourValue color = cop_color_property_->getOgreColor();
+      color.a = 0.;
+      cop_visual_->setColor(color.r, color.g, color.b, color.a);
+    }
+    if (icp_visual_) {
+      Ogre::ColourValue color = icp_color_property_->getOgreColor();
+      color.a = 0.;
+      icp_visual_->setColor(color.r, color.g, color.b, color.a);
+    }
   }
 
   // Now set or update the contents of the chosen CoP visual

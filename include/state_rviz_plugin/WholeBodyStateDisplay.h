@@ -75,8 +75,8 @@ private Q_SLOTS:
   void updateCoMColorAndAlpha();
   void updateCoMArrowGeometry();
   void updateCoPColorAndAlpha();
+  void updateICPColorAndAlpha();
   // void updateCMPColorAndAlpha();
-  // void updateICPColorAndAlpha();
   void updateGRFColorAndAlpha();
   void updateGRFArrowGeometry();
   void updateSupportLineColorAndAlpha();
@@ -128,13 +128,13 @@ private:
   rviz::FloatProperty *cop_alpha_property_;
   rviz::FloatProperty *cop_radius_property_;
 
+  rviz::ColorProperty *icp_color_property_;
+  rviz::FloatProperty *icp_alpha_property_;
+  rviz::FloatProperty *icp_radius_property_;
+
   // rviz::ColorProperty* cmp_color_property_;
   // rviz::FloatProperty* cmp_alpha_property_;
   // rviz::FloatProperty* cmp_radius_property_;
-
-  // rviz::ColorProperty* icp_color_property_;
-  // rviz::FloatProperty* icp_alpha_property_;
-  // rviz::FloatProperty* icp_radius_property_;
 
   rviz::ColorProperty *grf_color_property_;
   rviz::FloatProperty *grf_alpha_property_;
@@ -167,6 +167,7 @@ private:
 
   /** @brief Weight of the robot */
   double weight_;
+  double gravity_; //!< Gravity acceleration
 
   double friction_mu_; //!< Friction coefficient
 
