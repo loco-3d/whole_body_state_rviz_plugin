@@ -1,0 +1,641 @@
+#include <Eigen/Dense>
+
+#include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/parsers/urdf.hpp>
+
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+
+#include <rviz/frame_manager.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/validate_floats.h>
+#include <rviz/visualization_manager.h>
+
+#include "state_rviz_plugin/WholeBodyStateDisplay.h"
+
+using namespace rviz;
+
+namespace state_rviz_plugin {
+
+WholeBodyStateDisplay::WholeBodyStateDisplay()
+    : is_info_(false), initialized_model_(false), force_threshold_(0.),
+      weight_(0.), com_real_(true) {
+  // Robot properties
+  robot_model_property_ =
+      new StringProperty("Robot Description", "robot_description",
+                         "Name of the parameter to search for to load"
+                         " the robot description.",
+                         this, SLOT(updateRobotModel()));
+
+  // Category Groups
+  com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
+  // cop_category_ = new rviz::Property("Center Of Pressure", QVariant(), "",
+  // this); icp_category_ = new rviz::Property("Instantaneous Capture Point",
+  // QVariant(), "", this); cmp_category_ = new rviz::Property("Centroidal
+  // Momentum Pivot", QVariant(), "", this);
+  grf_category_ = new rviz::Property("Contact Forces", QVariant(), "", this);
+  support_category_ =
+      new rviz::Property("Support Region", QVariant(), "", this);
+
+  // CoM position and velocity properties
+  com_style_property_ = new EnumProperty(
+      "CoM Style", "Real", "The rendering operation to use to draw the CoM.",
+      com_category_, SLOT(updateCoMStyle()), this);
+  com_style_property_->addOption("Real", REAL);
+  com_style_property_->addOption("Projected", PROJECTED);
+  com_color_property_ = new rviz::ColorProperty(
+      "Color", QColor(255, 85, 0), "Color of a point", com_category_,
+      SLOT(updateCoMColorAndAlpha()), this);
+  com_alpha_property_ = new rviz::FloatProperty(
+      "Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
+      com_category_, SLOT(updateCoMColorAndAlpha()), this);
+  com_alpha_property_->setMin(0);
+  com_alpha_property_->setMax(1);
+  com_radius_property_ = new rviz::FloatProperty(
+      "Radius", 0.04, "Radius of a point", com_category_,
+      SLOT(updateCoMColorAndAlpha()), this);
+  com_shaft_length_property_ = new FloatProperty(
+      "Shaft Length", 0.4, "Length of the arrow's shaft, in meters.",
+      com_category_, SLOT(updateCoMArrowGeometry()), this);
+  com_shaft_radius_property_ = new FloatProperty(
+      "Shaft Radius", 0.02, "Radius of the arrow's shaft, in meters.",
+      com_category_, SLOT(updateCoMArrowGeometry()), this);
+  com_head_length_property_ = new FloatProperty(
+      "Head Length", 0.08, "Length of the arrow's head, in meters.",
+      com_category_, SLOT(updateCoMArrowGeometry()), this);
+  com_head_radius_property_ = new FloatProperty(
+      "Head Radius", 0.04, "Radius of the arrow's head, in meters.",
+      com_category_, SLOT(updateCoMArrowGeometry()), this);
+
+  // CoP properties
+  // cop_color_property_ =
+  // 		new rviz::ColorProperty("Color", QColor(204, 41, 204),
+  // 								"Color of a
+  // point", 								cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+
+  // cop_alpha_property_ =
+  // 		new rviz::FloatProperty("Alpha", 1.0,
+  // 								"0 is fully transparent, 1.0 is fully
+  // opaque.", 								cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+  // cop_alpha_property_->setMin(0);
+  // cop_alpha_property_->setMax(1);
+
+  // cop_radius_property_ =
+  // 		new rviz::FloatProperty("Radius", 0.04,
+  // 								"Radius of a
+  // point", 								cop_category_, SLOT(updateCoPColorAndAlpha()), this);
+
+  // Instantaneous Capture Point properties
+  // icp_color_property_ =
+  // 		new rviz::ColorProperty("Color", QColor(10, 41, 10),
+  // 								"Color of a
+  // point", 								icp_category_, SLOT(updateICPColorAndAlpha()), this);
+
+  // icp_alpha_property_ =
+  // 		new rviz::FloatProperty("Alpha", 1.0,
+  // 								"0 is fully transparent, 1.0 is fully
+  // opaque.", 								icp_category_, SLOT(updateICPColorAndAlpha()), this);
+  // icp_alpha_property_->setMin(0);
+  // icp_alpha_property_->setMax(1);
+
+  // icp_radius_property_ =
+  // 		new rviz::FloatProperty("Radius", 0.04,
+  // 								"Radius of a
+  // point", 								icp_category_, SLOT(updateICPColorAndAlpha()), this);
+
+  // CMP properties
+  // cmp_color_property_ =
+  // 		new rviz::ColorProperty("Color", QColor(200, 41, 10),
+  // 								"Color of a
+  // point", 								cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+
+  // cmp_alpha_property_ =
+  // 		new rviz::FloatProperty("Alpha", 1.0,
+  // 								"0 is fully transparent, 1.0 is fully
+  // opaque.", 								cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+  // cmp_alpha_property_->setMin(0);
+  // cmp_alpha_property_->setMax(1);
+
+  // cmp_radius_property_ =
+  // 		new rviz::FloatProperty("Radius", 0.04,
+  // 								"Radius of a
+  // point", 								cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+
+  // GRF properties
+  grf_color_property_ =
+      new ColorProperty("Color", QColor(85, 0, 255), "Color to draw the arrow.",
+                        grf_category_, SLOT(updateGRFColorAndAlpha()), this);
+  grf_alpha_property_ = new FloatProperty(
+      "Alpha", 1.0, "Amount of transparency to apply to the arrow.",
+      grf_category_, SLOT(updateGRFColorAndAlpha()), this);
+  grf_alpha_property_->setMin(0);
+  grf_alpha_property_->setMax(1);
+  grf_shaft_length_property_ = new FloatProperty(
+      "Shaft Length", 0.8, "Length of the arrow's shaft, in meters.",
+      grf_category_, SLOT(updateGRFArrowGeometry()), this);
+  grf_shaft_radius_property_ = new FloatProperty(
+      "Shaft Radius", 0.02, "Radius of the arrow's shaft, in meters.",
+      grf_category_, SLOT(updateGRFArrowGeometry()), this);
+  grf_head_length_property_ = new FloatProperty(
+      "Head Length", 0.08, "Length of the arrow's head, in meters.",
+      grf_category_, SLOT(updateGRFArrowGeometry()), this);
+  grf_head_radius_property_ = new FloatProperty(
+      "Head Radius", 0.04, "Radius of the arrow's head, in meters.",
+      grf_category_, SLOT(updateGRFArrowGeometry()), this);
+
+  // Support region properties
+  support_line_color_property_ = new ColorProperty(
+      "Line Color", QColor(85, 0, 255), "Color to draw the line.",
+      support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
+  support_line_alpha_property_ = new FloatProperty(
+      "Line Alpha", 1.0, "Amount of transparency to apply to the line.",
+      support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
+  support_line_alpha_property_->setMin(0);
+  support_line_alpha_property_->setMax(1);
+  support_line_radius_property_ = new FloatProperty(
+      "Line Radius", 0.005, "Radius of the line in m.", support_category_,
+      SLOT(updateSupportLineColorAndAlpha()), this);
+  support_mesh_color_property_ = new ColorProperty(
+      "Mesh Color", QColor(85, 0, 255), "Color to draw the mesh.",
+      support_category_, SLOT(updateSupportMeshColorAndAlpha()), this);
+  support_mesh_alpha_property_ = new FloatProperty(
+      "Mesh Alpha", 0.2, "Amount of transparency to apply to the mesh.",
+      support_category_, SLOT(updateSupportMeshColorAndAlpha()), this);
+  support_mesh_alpha_property_->setMin(0);
+  support_mesh_alpha_property_->setMax(1);
+  support_force_threshold_property_ = new FloatProperty(
+      "Force Threshold", 1.0, "Threshold for defining active contacts.",
+      support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
+}
+
+WholeBodyStateDisplay::~WholeBodyStateDisplay() {}
+
+void WholeBodyStateDisplay::clear() {
+  clearStatuses();
+  robot_model_.clear();
+  initialized_model_ = false;
+}
+
+void WholeBodyStateDisplay::onInitialize() {
+  MFDClass::onInitialize();
+  updateGRFColorAndAlpha();
+}
+
+void WholeBodyStateDisplay::onEnable() {
+  MFDClass::onEnable();
+  load();
+}
+
+void WholeBodyStateDisplay::onDisable() {
+  MFDClass::onDisable();
+  clear();
+}
+
+void WholeBodyStateDisplay::fixedFrameChanged() {
+  if (is_info_) {
+    processWholeBodyState();
+  }
+}
+
+void WholeBodyStateDisplay::reset() {
+  MFDClass::reset();
+  grf_visual_.clear();
+}
+
+void WholeBodyStateDisplay::load() {
+  std::string content;
+  if (!update_nh_.getParam(robot_model_property_->getStdString(), content)) {
+    std::string loc;
+    if (update_nh_.searchParam(robot_model_property_->getStdString(), loc)) {
+      update_nh_.getParam(loc, content);
+    } else {
+      clear();
+      setStatus(StatusProperty::Error, "URDF",
+                "Parameter [" + robot_model_property_->getString() +
+                    "] does not exist, and was not found by searchParam()");
+      return;
+    }
+  }
+
+  if (content.empty()) {
+    clear();
+    setStatus(StatusProperty::Error, "URDF", "URDF is empty");
+    return;
+  }
+
+  if (content == robot_model_) {
+    return;
+  }
+
+  robot_model_ = content;
+
+  // Initializing the dynamics from the URDF model
+  pinocchio::urdf::buildModelFromXML(robot_model_,
+                                     pinocchio::JointModelFreeFlyer(), model_);
+  weight_ =
+      pinocchio::computeTotalMass(model_) * model_.gravity.linear().norm();
+  initialized_model_ = true;
+  setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
+}
+
+void WholeBodyStateDisplay::updateRobotModel() {
+  if (isEnabled()) {
+    load();
+    context_->queueRender();
+  }
+}
+
+void WholeBodyStateDisplay::updateCoMStyle() {
+  CoMStyle style = (CoMStyle)com_style_property_->getOptionInt();
+
+  switch (style) {
+  case REAL:
+  default:
+    com_real_ = true;
+    break;
+
+  case PROJECTED:
+    com_real_ = false;
+    break;
+  }
+}
+
+void WholeBodyStateDisplay::updateCoMColorAndAlpha() {
+  const float &radius = com_radius_property_->getFloat();
+  Ogre::ColourValue color = com_color_property_->getOgreColor();
+  color.a = com_alpha_property_->getFloat();
+  if (com_visual_) {
+    com_visual_->setColor(color.r, color.g, color.b, color.a);
+    com_visual_->setRadius(radius);
+  }
+  if (comd_visual_) {
+    comd_visual_->setColor(color.r, color.g, color.b, color.a);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateCoMArrowGeometry() {
+  const float &shaft_length = com_shaft_length_property_->getFloat();
+  const float &shaft_radius = com_shaft_radius_property_->getFloat();
+  const float &head_length = com_head_length_property_->getFloat();
+  const float &head_radius = com_head_radius_property_->getFloat();
+  if (comd_visual_) {
+    comd_visual_->setProperties(shaft_length, shaft_radius, head_length,
+                                head_radius);
+  }
+  context_->queueRender();
+}
+
+// void WholeBodyStateDisplay::updateCoPColorAndAlpha()
+// {
+// 	float radius = cop_radius_property_->getFloat();
+// 	Ogre::ColourValue color = cop_color_property_->getOgreColor();
+// 	color.a = cop_alpha_property_->getFloat();
+
+// 	if (cop_visual_) {
+// 		cop_visual_->setColor(color.r, color.g, color.b, color.a);
+// 		cop_visual_->setRadius(radius);
+// 	}
+
+// 	context_->queueRender();
+// }
+
+// void WholeBodyStateDisplay::updateICPColorAndAlpha()
+// {
+// 	float radius = icp_radius_property_->getFloat();
+// 	Ogre::ColourValue color = icp_color_property_->getOgreColor();
+// 	color.a = icp_alpha_property_->getFloat();
+// 	if (icp_visual_) {
+// 		icp_visual_->setColor(color.r, color.g, color.b, color.a);
+// 		icp_visual_->setRadius(radius);
+// 	}
+
+// 	context_->queueRender();
+// }
+
+// void WholeBodyStateDisplay::updateCMPColorAndAlpha()
+// {
+// 	float radius = cmp_radius_property_->getFloat();
+// 	Ogre::ColourValue color = cmp_color_property_->getOgreColor();
+// 	color.a = cmp_alpha_property_->getFloat();
+
+// 	if (cmp_visual_) {
+// 		cmp_visual_->setColor(color.r, color.g, color.b, color.a);
+// 		cmp_visual_->setRadius(radius);
+// 	}
+
+// 	context_->queueRender();
+// }
+
+void WholeBodyStateDisplay::updateGRFColorAndAlpha() {
+  Ogre::ColourValue color = grf_color_property_->getOgreColor();
+  color.a = grf_alpha_property_->getFloat();
+  for (size_t i = 0; i < grf_visual_.size(); ++i) {
+    grf_visual_[i]->setColor(color.r, color.g, color.b, color.a);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateGRFArrowGeometry() {
+  const float &shaft_length = grf_shaft_length_property_->getFloat();
+  const float &shaft_radius = grf_shaft_radius_property_->getFloat();
+  const float &head_length = grf_head_length_property_->getFloat();
+  const float &head_radius = grf_head_radius_property_->getFloat();
+  for (size_t i = 0; i < grf_visual_.size(); ++i) {
+    grf_visual_[i]->setProperties(shaft_length, shaft_radius, head_length,
+                                  head_radius);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateSupportLineColorAndAlpha() {
+  Ogre::ColourValue color = support_line_color_property_->getOgreColor();
+  color.a = support_line_alpha_property_->getFloat();
+  force_threshold_ = support_force_threshold_property_->getFloat();
+
+  float radius = support_line_radius_property_->getFloat();
+  if (support_visual_) {
+    support_visual_->setLineColor(color.r, color.g, color.b, color.a);
+    support_visual_->setLineRadius(radius);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateSupportMeshColorAndAlpha() {
+  Ogre::ColourValue color = support_mesh_color_property_->getOgreColor();
+  color.a = support_mesh_alpha_property_->getFloat();
+  if (support_visual_) {
+    support_visual_->setMeshColor(color.r, color.g, color.b, color.a);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::processMessage(
+    const state_msgs::WholeBodyState::ConstPtr &msg) {
+  msg_ = msg;
+  is_info_ = true;
+  processWholeBodyState();
+}
+
+void WholeBodyStateDisplay::processWholeBodyState() {
+  // Checking if the urdf model was initialized
+  if (!initialized_model_)
+    return;
+
+  // // Getting the base velocity
+  // unsigned int num_base_joints = msg_->base.size();
+  // dwl::rbd::Vector6d base_pos = dwl::rbd::Vector6d::Zero();
+  // dwl::rbd::Vector6d base_vel = dwl::rbd::Vector6d::Zero();
+  // for (unsigned int i = 0; i < num_base_joints; i++) {
+  // 	dwl_msgs::BaseState base = msg_->base[i];
+
+  // 	// Getting the base joint id
+  // 	unsigned int id = base.id;
+
+  // 	// Setting the base position
+  // 	base_pos(id) = base.position;
+
+  // 	// Setting the base velocity
+  // 	base_vel(id) = base.velocity;
+  // }
+
+  // // Getting the joint position and velocity
+  // unsigned int num_joints = msg_->joints.size();
+  // Eigen::VectorXd joint_pos = Eigen::VectorXd::Zero(num_joints);
+  // Eigen::VectorXd joint_vel = Eigen::VectorXd::Zero(num_joints);
+  // for (unsigned int i = 0; i < num_joints; i++) {
+  // 	dwl_msgs::JointState joint = msg_->joints[i];
+
+  // 	// Getting the joint name
+  // 	std::string name  = joint.name;
+
+  // 	// Getting the joint id
+  // 	unsigned int id = fbs_.getJointId(name);
+
+  // 	// Setting the joint position and velocity
+  // 	joint_pos(id) = joint.position;
+  // 	joint_vel(id) = joint.velocity;
+  // }
+
+  // // Getting the contact wrenches and positions
+  // dwl::rbd::BodyVectorXd contact_pos;
+  // dwl::rbd::BodyVector6d contact_for;
+
+  // // Computing the center of mass position and velocity
+  // dwl::rbd::Vector6d null_base_pos = dwl::rbd::Vector6d::Zero();
+  // Eigen::Vector3d base_rpy = dwl::rbd::angularPart(base_pos);
+  // Eigen::Vector3d com_pos = fbs_.getSystemCoM(null_base_pos, joint_pos);
+  // Eigen::Vector3d com_vel_W = fbs_.getSystemCoMRate(base_pos, joint_pos,
+  // 												  base_vel,
+  // joint_vel); Eigen::Vector3d com_vel_B =
+  // 		frame_tf_.fromWorldToBaseFrame(com_vel_W, base_rpy);
+
+  // // Computing the center of pressure position
+  // Eigen::Vector3d cop_pos;
+  // wdyn_.computeCenterOfPressure(cop_pos, contact_for, contact_pos);
+
+  // // Computing the instantaneous capture point position
+  // Eigen::Vector3d icp_pos;
+  // double height = com_pos(dwl::rbd::Z) - cop_pos(dwl::rbd::Z);
+  // wdyn_.computeInstantaneousCapturePoint(icp_pos, com_pos, com_vel_B,
+  // height);
+
+  // // Computing the centroidal moment pivot position
+  // Eigen::Vector3d cmp_pos;
+  // wdyn_.computeCentroidalMomentPivot(cmp_pos, com_pos, height, contact_for);
+
+  // Here we call the rviz::FrameManager to get the transform from the
+  // fixed frame to the frame in the header of this Point message.  If
+  // it fails, we can't do anything else so we return.
+  Ogre::Quaternion orientation;
+  Ogre::Vector3 position;
+  if (!context_->getFrameManager()->getTransform(
+          msg_->header.frame_id, msg_->header.stamp, position, orientation)) {
+    ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+              msg_->header.frame_id.c_str(), qPrintable(fixed_frame_));
+    return;
+  }
+
+  // Resetting the point visualizers
+  com_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
+  comd_visual_.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
+  // cop_visual_.reset(new PointVisual(context_->getSceneManager(),
+  // scene_node_)); icp_visual_.reset(new
+  // PointVisual(context_->getSceneManager(), scene_node_));
+  // cmp_visual_.reset(new PointVisual(context_->getSceneManager(),
+  // scene_node_));
+  support_visual_.reset(
+      new PolygonVisual(context_->getSceneManager(), scene_node_));
+
+  // Defining the center of mass as Ogre::Vector3
+  Ogre::Vector3 com_point;
+  if (com_real_) {
+    com_point.x = msg_->centroidal.com_position.x;
+    com_point.y = msg_->centroidal.com_position.y;
+    com_point.z = msg_->centroidal.com_position.z;
+  } // else {
+  // 	Eigen::Vector3d cop_z = Eigen::Vector3d::Zero();
+  // 	cop_z(dwl::rbd::Z) = cop_pos(dwl::rbd::Z);
+  // 	Eigen::Vector3d rot_cop_z =
+  // 			dwl::math::getRotationMatrix(dwl::rbd::angularPart(base_pos)).transpose()
+  // * cop_z; 	com_point.x = com_pos(dwl::rbd::X) + rot_cop_z(dwl::rbd::X);
+  // 	com_point.y = com_pos(dwl::rbd::Y) + rot_cop_z(dwl::rbd::Y);
+  // 	com_point.z = cop_pos(dwl::rbd::Z);
+  // }
+
+  // Defining the center of mass velocity orientation
+  Eigen::Vector3d com_ref_dir = -Eigen::Vector3d::UnitZ();
+  Eigen::Vector3d com_vel(msg_->centroidal.com_velocity.x,
+                          msg_->centroidal.com_velocity.y,
+                          msg_->centroidal.com_velocity.z);
+  Eigen::Quaterniond com_q;
+  com_q.setFromTwoVectors(com_ref_dir, com_vel);
+  Ogre::Quaternion comd_for_orientation(com_q.w(), com_q.x(), com_q.y(),
+                                        com_q.z());
+
+  // Now set or update the contents of the chosen CoM visual
+  updateCoMColorAndAlpha();
+  if (std::isfinite(com_point.x) && std::isfinite(com_point.y) &&
+      std::isfinite(com_point.z)) {
+    com_visual_->setPoint(com_point);
+    com_visual_->setFramePosition(position);
+    com_visual_->setFrameOrientation(orientation);
+    const double &com_vel_norm = com_vel.norm();
+    const float &shaft_length =
+        com_shaft_length_property_->getFloat() * com_vel_norm;
+    const float &shaft_radius = com_shaft_radius_property_->getFloat();
+    float head_length = 0., head_radius = 0.;
+    if (com_vel_norm > 0.01) {
+      head_length = com_head_length_property_->getFloat();
+      head_radius = com_head_radius_property_->getFloat();
+    }
+    comd_visual_->setProperties(shaft_length, shaft_radius, head_length,
+                                head_radius);
+    comd_visual_->setArrow(com_point, comd_for_orientation);
+    comd_visual_->setFramePosition(position);
+    comd_visual_->setFrameOrientation(orientation);
+  }
+
+  // // Defining the center of pressure as Ogre::Vector3
+  // Ogre::Vector3 cop_point;
+  // cop_point.x = cop_pos(dwl::rbd::X);
+  // cop_point.y = cop_pos(dwl::rbd::Y);
+  // cop_point.z = cop_pos(dwl::rbd::Z);
+
+  // // Defining the Instantaneous Capture Point as Ogre::Vector3
+  // Ogre::Vector3 icp_point;
+  // icp_point.x = icp_pos(dwl::rbd::X);
+  // icp_point.y = icp_pos(dwl::rbd::Y);
+  // icp_point.z = icp_pos(dwl::rbd::Z);
+
+  // // Defining the Centroidal Moment Pivot as Ogre::Vector3
+  // Ogre::Vector3 cmp_point;
+
+  // cmp_point.x = cmp_pos(dwl::rbd::X);
+  // cmp_point.y = cmp_pos(dwl::rbd::Y);
+  // cmp_point.z = cmp_pos(dwl::rbd::Z);
+
+  // // Now set or update the contents of the chosen CoP visual
+  // updateCoPColorAndAlpha();
+
+  // if (std::isfinite(cop_pos(dwl::rbd::X))
+  //     && std::isfinite(cop_pos(dwl::rbd::Y))
+  //     && std::isfinite(cop_pos(dwl::rbd::Z)))
+  // {
+  //     cop_visual_->setPoint(cop_point);
+  //     cop_visual_->setFramePosition(position);
+  //     cop_visual_->setFrameOrientation(orientation);
+  // }
+
+  // // Now set or update the contents of the chosen Inst CP visual
+  // updateICPColorAndAlpha();
+  // if (std::isfinite(icp_pos(dwl::rbd::X))
+  //     && std::isfinite(icp_pos(dwl::rbd::Y))
+  //     && std::isfinite(icp_pos(dwl::rbd::Z)))
+  // {
+  //     icp_visual_->setPoint(icp_point);
+  //     icp_visual_->setFramePosition(position);
+  //     icp_visual_->setFrameOrientation(orientation);
+  // }
+  // // Now set or update the contents of the chosen CMP visual
+  // updateCMPColorAndAlpha();
+  // if (std::isfinite(cmp_pos(dwl::rbd::X))
+  //     && std::isfinite(cmp_pos(dwl::rbd::Y))
+  //     && std::isfinite(cmp_pos(dwl::rbd::Z)))
+  // {
+  //     cmp_visual_->setPoint(cmp_point);
+  //     cmp_visual_->setFramePosition(position);
+  //     cmp_visual_->setFrameOrientation(orientation);
+  // }
+
+  // Now set or update the contents of the chosen GRF visual
+  std::vector<Ogre::Vector3> support;
+  unsigned int num_contacts = msg_->contacts.size();
+  grf_visual_.clear();
+  for (unsigned int i = 0; i < num_contacts; ++i) {
+    const state_msgs::ContactState &contact = msg_->contacts[i];
+
+    // Getting the name
+    std::string name = contact.name;
+
+    // Getting the contact position
+    Ogre::Vector3 contact_pos(contact.pose.position.x, contact.pose.position.y,
+                              contact.pose.position.z);
+
+    // Getting the force direction
+    Eigen::Vector3d for_ref_dir = -Eigen::Vector3d::UnitZ();
+    Eigen::Vector3d for_dir(contact.wrench.force.x, contact.wrench.force.y,
+                            contact.wrench.force.z);
+
+    // Detecting active contacts
+    if (for_dir.norm() > force_threshold_ && std::isfinite(contact_pos.x) &&
+        std::isfinite(contact_pos.y) && std::isfinite(contact_pos.z)) {
+      Eigen::Quaterniond for_q;
+      for_q.setFromTwoVectors(for_ref_dir, for_dir);
+      Ogre::Quaternion contact_for_orientation(for_q.w(), for_q.x(), for_q.y(),
+                                               for_q.z());
+
+      // We are keeping a vector of visual pointers. This creates the next
+      // one and stores it in the vector
+      boost::shared_ptr<ArrowVisual> arrow;
+      arrow.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
+      arrow->setArrow(contact_pos, contact_for_orientation);
+      arrow->setFramePosition(position);
+      arrow->setFrameOrientation(orientation);
+
+      // Setting the arrow color and properties
+      Ogre::ColourValue color = grf_color_property_->getOgreColor();
+      color.a = grf_alpha_property_->getFloat();
+      arrow->setColor(color.r, color.g, color.b, color.a);
+      const float &shaft_length =
+          grf_shaft_length_property_->getFloat() * for_dir.norm() / weight_;
+      const float &shaft_radius = grf_shaft_radius_property_->getFloat();
+      const float &head_length = grf_head_length_property_->getFloat();
+      const float &head_radius = grf_head_radius_property_->getFloat();
+      arrow->setProperties(shaft_length, shaft_radius, head_length,
+                           head_radius);
+
+      // And send it to the end of the vector
+      if (std::isfinite(shaft_length) && std::isfinite(shaft_radius) &&
+          std::isfinite(head_length) && std::isfinite(head_radius)) {
+        grf_visual_.push_back(arrow);
+      }
+      support.push_back(contact_pos);
+    }
+  }
+
+  // Now set or update the contents of the chosen CoP visual
+  support_visual_->setVertices(support);
+  updateSupportLineColorAndAlpha();
+  updateSupportMeshColorAndAlpha();
+  support_visual_->setFramePosition(position);
+  support_visual_->setFrameOrientation(orientation);
+}
+
+} // namespace state_rviz_plugin
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(state_rviz_plugin::WholeBodyStateDisplay, rviz::Display)
