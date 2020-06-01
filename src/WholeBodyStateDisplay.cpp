@@ -36,8 +36,8 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       new rviz::Property("Center Of Pressure", QVariant(), "", this);
   icp_category_ =
       new rviz::Property("Instantaneous Capture Point", QVariant(), "", this);
-  //    cmp_category_ = new rviz::Property("Centroidal Momentum Pivot",
-  //    QVariant(), "", this);
+  cmp_category_ =
+      new rviz::Property("Centroidal Momentum Pivot", QVariant(), "", this);
   grf_category_ = new rviz::Property("Contact Forces", QVariant(), "", this);
   support_category_ =
       new rviz::Property("Support Region", QVariant(), "", this);
@@ -101,22 +101,17 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       SLOT(updateICPColorAndAlpha()), this);
 
   // CMP properties
-  // cmp_color_property_ =
-  // 		new rviz::ColorProperty("Color", QColor(200, 41, 10),
-  // 								"Color of a
-  // point", cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
-
-  // cmp_alpha_property_ =
-  // 		new rviz::FloatProperty("Alpha", 1.0,
-  // 								"0 is fully
-  // transparent, 1.0 is fully opaque.", cmp_category_,
-  // SLOT(updateCMPColorAndAlpha()), this); cmp_alpha_property_->setMin(0);
-  // cmp_alpha_property_->setMax(1);
-
-  // cmp_radius_property_ =
-  // 		new rviz::FloatProperty("Radius", 0.04,
-  // 								"Radius of a
-  // point", cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+  cmp_color_property_ = new rviz::ColorProperty(
+      "Color", QColor(200, 41, 10), "Color of a point", cmp_category_,
+      SLOT(updateCMPColorAndAlpha()), this);
+  cmp_alpha_property_ = new rviz::FloatProperty(
+      "Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
+      cmp_category_, SLOT(updateCMPColorAndAlpha()), this);
+  cmp_alpha_property_->setMin(0);
+  cmp_alpha_property_->setMax(1);
+  cmp_radius_property_ = new rviz::FloatProperty(
+      "Radius", 0.04, "Radius of a point", cmp_category_,
+      SLOT(updateCMPColorAndAlpha()), this);
 
   // GRF properties
   grf_color_property_ =
@@ -319,19 +314,16 @@ void WholeBodyStateDisplay::updateICPColorAndAlpha() {
   context_->queueRender();
 }
 
-// void WholeBodyStateDisplay::updateCMPColorAndAlpha()
-// {
-// 	float radius = cmp_radius_property_->getFloat();
-// 	Ogre::ColourValue color = cmp_color_property_->getOgreColor();
-// 	color.a = cmp_alpha_property_->getFloat();
-
-// 	if (cmp_visual_) {
-// 		cmp_visual_->setColor(color.r, color.g, color.b, color.a);
-// 		cmp_visual_->setRadius(radius);
-// 	}
-
-// 	context_->queueRender();
-// }
+void WholeBodyStateDisplay::updateCMPColorAndAlpha() {
+  const float &radius = cmp_radius_property_->getFloat();
+  Ogre::ColourValue color = cmp_color_property_->getOgreColor();
+  color.a = cmp_alpha_property_->getFloat();
+  if (cmp_visual_) {
+    cmp_visual_->setColor(color.r, color.g, color.b, color.a);
+    cmp_visual_->setRadius(radius);
+  }
+  context_->queueRender();
+}
 
 void WholeBodyStateDisplay::updateGRFColorAndAlpha() {
   Ogre::ColourValue color = grf_color_property_->getOgreColor();
@@ -408,25 +400,6 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   if (!initialized_model_)
     return;
 
-  // // Computing the center of mass position and velocity
-  // dwl::rbd::Vector6d null_base_pos = dwl::rbd::Vector6d::Zero();
-  // Eigen::Vector3d base_rpy = dwl::rbd::angularPart(base_pos);
-  // Eigen::Vector3d com_pos = fbs_.getSystemCoM(null_base_pos, joint_pos);
-  // Eigen::Vector3d com_vel_W = fbs_.getSystemCoMRate(base_pos, joint_pos,
-  // 												  base_vel,
-  // joint_vel); Eigen::Vector3d com_vel_B =
-  // 		frame_tf_.fromWorldToBaseFrame(com_vel_W, base_rpy);
-
-  // // Computing the instantaneous capture point position
-  // Eigen::Vector3d icp_pos;
-  // double height = com_pos(dwl::rbd::Z) - cop_pos(dwl::rbd::Z);
-  // wdyn_.computeInstantaneousCapturePoint(icp_pos, com_pos, com_vel_B,
-  // height);
-
-  // // Computing the centroidal moment pivot position
-  // Eigen::Vector3d cmp_pos;
-  // wdyn_.computeCentroidalMomentPivot(cmp_pos, com_pos, height, contact_for);
-
   // Here we call the rviz::FrameManager to get the transform from the
   // fixed frame to the frame in the header of this Point message.  If
   // it fails, we can't do anything else so we return.
@@ -442,28 +415,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   // Resetting the point visualizers
   com_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
   comd_visual_.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
-  // cmp_visual_.reset(new PointVisual(context_->getSceneManager(),
-  // scene_node_));
   support_visual_.reset(
       new PolygonVisual(context_->getSceneManager(), scene_node_));
-
-  // // Defining the Centroidal Moment Pivot as Ogre::Vector3
-  // Ogre::Vector3 cmp_point;
-
-  // cmp_point.x = cmp_pos(dwl::rbd::X);
-  // cmp_point.y = cmp_pos(dwl::rbd::Y);
-  // cmp_point.z = cmp_pos(dwl::rbd::Z);
-
-  // // Now set or update the contents of the chosen CMP visual
-  // updateCMPColorAndAlpha();
-  // if (std::isfinite(cmp_pos(dwl::rbd::X))
-  //     && std::isfinite(cmp_pos(dwl::rbd::Y))
-  //     && std::isfinite(cmp_pos(dwl::rbd::Z)))
-  // {
-  //     cmp_visual_->setPoint(cmp_point);
-  //     cmp_visual_->setFramePosition(position);
-  //     cmp_visual_->setFrameOrientation(orientation);
-  // }
 
   // Now set or update the contents of the chosen GRF visual
   std::vector<Ogre::Vector3> support;
@@ -471,7 +424,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   grf_visual_.clear();
   cones_visual_.clear();
   Eigen::Vector3d cop_pos = Eigen::Vector3d::Zero();
-  double total_force = 0;
+  Eigen::Vector3d total_force = Eigen::Vector3d::Zero();
   for (unsigned int i = 0; i < num_contacts; ++i) {
     const state_msgs::ContactState &contact = msg_->contacts[i];
     std::string name = contact.name;
@@ -489,7 +442,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     cop_pos += contact.wrench.force.z *
                Eigen::Vector3d(contact.pose.position.x, contact.pose.position.y,
                                contact.pose.position.z);
-    total_force += contact.wrench.force.z;
+    total_force += Eigen::Vector3d(
+        contact.wrench.force.x, contact.wrench.force.y, contact.wrench.force.z);
 
     // Building the support polygone
     if (for_dir.norm() > force_threshold_ && std::isfinite(contact_pos.x) &&
@@ -557,7 +511,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   }
 
   // Building the CoP visual
-  cop_pos /= total_force;
+  cop_pos /= total_force(2);
 
   // Defining the center of mass as Ogre::Vector3
   Ogre::Vector3 com_point;
@@ -617,6 +571,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
         new PointVisual(context_->getSceneManager(), scene_node_));
     icp_visual_.reset(
         new PointVisual(context_->getSceneManager(), scene_node_));
+    cmp_visual_.reset(
+        new PointVisual(context_->getSceneManager(), scene_node_));
 
     updateCoPColorAndAlpha();
     if (std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) &&
@@ -645,6 +601,20 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       icp_visual_->setFramePosition(position);
       icp_visual_->setFrameOrientation(orientation);
     }
+
+    // Computing the CMP
+    Eigen::Vector3d cmp_pos;
+    cmp_pos(0) = com_pos(0) - total_force(0) / total_force(2) * height;
+    cmp_pos(1) = com_pos(1) - total_force(1) / total_force(2) * height;
+    cmp_pos(2) = com_pos(2) - height;
+    updateCMPColorAndAlpha();
+    if (std::isfinite(cmp_pos(0)) && std::isfinite(cmp_pos(1)) &&
+        std::isfinite(cmp_pos(2))) {
+      Ogre::Vector3 cmp_point(cmp_pos(0), cmp_pos(1), cmp_pos(2));
+      cmp_visual_->setPoint(cmp_point);
+      cmp_visual_->setFramePosition(position);
+      cmp_visual_->setFrameOrientation(orientation);
+    }
   } else {
     if (cop_visual_) {
       Ogre::ColourValue color = cop_color_property_->getOgreColor();
@@ -655,6 +625,11 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       Ogre::ColourValue color = icp_color_property_->getOgreColor();
       color.a = 0.;
       icp_visual_->setColor(color.r, color.g, color.b, color.a);
+    }
+    if (cmp_visual_) {
+      Ogre::ColourValue color = cmp_color_property_->getOgreColor();
+      color.a = 0.;
+      cmp_visual_->setColor(color.r, color.g, color.b, color.a);
     }
   }
 

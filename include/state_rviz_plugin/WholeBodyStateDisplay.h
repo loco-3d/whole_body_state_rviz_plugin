@@ -76,7 +76,7 @@ private Q_SLOTS:
   void updateCoMArrowGeometry();
   void updateCoPColorAndAlpha();
   void updateICPColorAndAlpha();
-  // void updateCMPColorAndAlpha();
+  void updateCMPColorAndAlpha();
   void updateGRFColorAndAlpha();
   void updateGRFArrowGeometry();
   void updateSupportLineColorAndAlpha();
@@ -132,9 +132,9 @@ private:
   rviz::FloatProperty *icp_alpha_property_;
   rviz::FloatProperty *icp_radius_property_;
 
-  // rviz::ColorProperty* cmp_color_property_;
-  // rviz::FloatProperty* cmp_alpha_property_;
-  // rviz::FloatProperty* cmp_radius_property_;
+  rviz::ColorProperty *cmp_color_property_;
+  rviz::FloatProperty *cmp_alpha_property_;
+  rviz::FloatProperty *cmp_radius_property_;
 
   rviz::ColorProperty *grf_color_property_;
   rviz::FloatProperty *grf_alpha_property_;
@@ -156,23 +156,14 @@ private:
 
   /** @brief Whole-body dynamics */
   pinocchio::Model model_;
-  //   pinocchio::Data data_;
-  // dwl::math::FrameTF frame_tf_;
 
   std::vector<boost::shared_ptr<rviz::Shape>>
-      cones_visual_; //!< Handles actually drawing the cones
-
-  /** @brief Force threshold for detecting active contacts */
-  double force_threshold_;
-
-  /** @brief Weight of the robot */
-  double weight_;
-  double gravity_; //!< Gravity acceleration
-
-  double friction_mu_; //!< Friction coefficient
-
-  /** @brief CoM style */
-  enum CoMStyle { REAL, PROJECTED };
+      cones_visual_;       //!< Handles actually drawing the cones
+  double force_threshold_; //!< Force threshold for detecting active contacts
+  double weight_;          //!< Weight of the robot
+  double gravity_;         //!< Gravity acceleration
+  double friction_mu_;     //!< Friction coefficient
+  enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
   bool com_real_;
 };
 
