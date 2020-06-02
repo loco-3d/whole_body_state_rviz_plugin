@@ -55,13 +55,13 @@ public:
   void clear();
 
   /** @brief Overrides of public virtual functions from the Display class */
-  void onInitialize();
-  void onEnable();
-  void onDisable();
-  void fixedFrameChanged();
+  void onInitialize() override;
+  void onEnable() override;
+  void onDisable() override;
+  void fixedFrameChanged() override;
 
   /** @brief Clear the visuals by deleting their objects */
-  void reset();
+  void reset() override;
 
   /** @brief Loads a URDF from the ros-param named by our
    * "Robot Description" property, iterates through the links, and
@@ -73,7 +73,7 @@ public:
    * This is our callback to handle an incoming message
    * @param const state_msgs::WholeBodyState::ConstPtr& Whole-body state msg
    */
-  void processMessage(const state_msgs::WholeBodyState::ConstPtr &msg);
+  void processMessage(const state_msgs::WholeBodyState::ConstPtr &msg) override;
 
 private Q_SLOTS:
   /** @brief Helper function to apply color and alpha to all visuals.

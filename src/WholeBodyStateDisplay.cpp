@@ -186,6 +186,7 @@ WholeBodyStateDisplay::~WholeBodyStateDisplay() {}
 void WholeBodyStateDisplay::clear() {
   clearStatuses();
   robot_model_.clear();
+  model_ = pinocchio::Model();
   initialized_model_ = false;
 }
 
