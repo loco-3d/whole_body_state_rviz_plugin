@@ -30,7 +30,9 @@ namespace state_rviz_plugin {
 
 WholeBodyStateDisplay::WholeBodyStateDisplay()
     : is_info_(false), initialized_model_(false), force_threshold_(0.),
-      weight_(0.), gravity_(9.81), com_real_(true) {
+      weight_(0.), gravity_(9.81), com_real_(true), com_enable_(true),
+      cop_enable_(true), icp_enable_(true), cmp_enable_(true),
+      grf_enable_(true), support_enable_(true), cone_enable_(true) {
   // Robot properties
   robot_model_property_ =
       new StringProperty("Robot Description", "robot_description",
@@ -53,6 +55,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       new rviz::Property("Friction Cone", QVariant(), "", this);
 
   // CoM position and velocity properties
+  com_enable_property_ =
+      new BoolProperty("Enable", true, "Enable/disable the CoM display",
+                       com_category_, SLOT(updateCoMEnable()), this);
   com_style_property_ = new EnumProperty(
       "CoM Style", "Real", "The rendering operation to use to draw the CoM.",
       com_category_, SLOT(updateCoMStyle()), this);
@@ -83,6 +88,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       com_category_, SLOT(updateCoMArrowGeometry()), this);
 
   // CoP properties
+  cop_enable_property_ =
+      new BoolProperty("Enable", true, "Enable/disable the CoP display",
+                       cop_category_, SLOT(updateCoPEnable()), this);
   cop_color_property_ = new rviz::ColorProperty(
       "Color", QColor(204, 41, 204), "Color of a point", cop_category_,
       SLOT(updateCoPColorAndAlpha()), this);
@@ -96,6 +104,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       SLOT(updateCoPColorAndAlpha()), this);
 
   // Instantaneous Capture Point properties
+  icp_enable_property_ =
+      new BoolProperty("Enable", true, "Enable/disable the ICP display",
+                       icp_category_, SLOT(updateICPEnable()), this);
   icp_color_property_ = new rviz::ColorProperty(
       "Color", QColor(10, 41, 10), "Color of a point", icp_category_,
       SLOT(updateICPColorAndAlpha()), this);
@@ -109,6 +120,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       SLOT(updateICPColorAndAlpha()), this);
 
   // CMP properties
+  cmp_enable_property_ =
+      new BoolProperty("Enable", true, "Enable/disable the CMP display",
+                       cmp_category_, SLOT(updateCMPEnable()), this);
   cmp_color_property_ = new rviz::ColorProperty(
       "Color", QColor(200, 41, 10), "Color of a point", cmp_category_,
       SLOT(updateCMPColorAndAlpha()), this);
@@ -122,6 +136,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       SLOT(updateCMPColorAndAlpha()), this);
 
   // GRF properties
+  grf_enable_property_ = new BoolProperty(
+      "Enable", true, "Enable/disable the contact force display", grf_category_,
+      SLOT(updateGRFEnable()), this);
   grf_color_property_ =
       new ColorProperty("Color", QColor(85, 0, 255), "Color to draw the arrow.",
                         grf_category_, SLOT(updateGRFColorAndAlpha()), this);
@@ -144,6 +161,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       grf_category_, SLOT(updateGRFArrowGeometry()), this);
 
   // Support region properties
+  support_enable_property_ = new BoolProperty(
+      "Enable", true, "Enable/disable the support polygon display",
+      support_category_, SLOT(updateSupportEnable()), this);
   support_line_color_property_ = new ColorProperty(
       "Line Color", QColor(85, 0, 255), "Color to draw the line.",
       support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
@@ -168,6 +188,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
 
   // Friction cone properties
+  friction_cone_enable_property_ = new BoolProperty(
+      "Enable", true, "Enable/disable the friction cone display",
+      friction_category_, SLOT(updateFrictionConeEnable()), this);
   friction_cone_color_property_ = new ColorProperty(
       "Color", QColor(255, 0, 127), "Color to draw the friction cone.",
       friction_category_, SLOT(updateFrictionConeColorAndAlpha()), this);
@@ -260,6 +283,17 @@ void WholeBodyStateDisplay::updateRobotModel() {
   }
 }
 
+void WholeBodyStateDisplay::updateCoMEnable() {
+  com_enable_ = com_enable_property_->getBool();
+  if (com_visual_ && !com_enable_) {
+    com_visual_.reset();
+  }
+  if (comd_visual_ && !com_enable_) {
+    comd_visual_.reset();
+  }
+  context_->queueRender();
+}
+
 void WholeBodyStateDisplay::updateCoMStyle() {
   CoMStyle style = (CoMStyle)com_style_property_->getOptionInt();
 
@@ -301,6 +335,14 @@ void WholeBodyStateDisplay::updateCoMArrowGeometry() {
   context_->queueRender();
 }
 
+void WholeBodyStateDisplay::updateCoPEnable() {
+  cop_enable_ = cop_enable_property_->getBool();
+  if (cop_visual_ && !cop_enable_) {
+    cop_visual_.reset();
+  }
+  context_->queueRender();
+}
+
 void WholeBodyStateDisplay::updateCoPColorAndAlpha() {
   const float &radius = cop_radius_property_->getFloat();
   Ogre::ColourValue color = cop_color_property_->getOgreColor();
@@ -308,6 +350,14 @@ void WholeBodyStateDisplay::updateCoPColorAndAlpha() {
   if (cop_visual_) {
     cop_visual_->setColor(color.r, color.g, color.b, color.a);
     cop_visual_->setRadius(radius);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateICPEnable() {
+  icp_enable_ = icp_enable_property_->getBool();
+  if (icp_visual_ && !icp_enable_) {
+    icp_visual_.reset();
   }
   context_->queueRender();
 }
@@ -323,6 +373,14 @@ void WholeBodyStateDisplay::updateICPColorAndAlpha() {
   context_->queueRender();
 }
 
+void WholeBodyStateDisplay::updateCMPEnable() {
+  cmp_enable_ = cmp_enable_property_->getBool();
+  if (cmp_visual_ && !cmp_enable_) {
+    cmp_visual_.reset();
+  }
+  context_->queueRender();
+}
+
 void WholeBodyStateDisplay::updateCMPColorAndAlpha() {
   const float &radius = cmp_radius_property_->getFloat();
   Ogre::ColourValue color = cmp_color_property_->getOgreColor();
@@ -330,6 +388,14 @@ void WholeBodyStateDisplay::updateCMPColorAndAlpha() {
   if (cmp_visual_) {
     cmp_visual_->setColor(color.r, color.g, color.b, color.a);
     cmp_visual_->setRadius(radius);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateGRFEnable() {
+  grf_enable_ = grf_enable_property_->getBool();
+  if (grf_visual_.size() == 0 && !grf_enable_) {
+    grf_visual_.clear();
   }
   context_->queueRender();
 }
@@ -355,6 +421,14 @@ void WholeBodyStateDisplay::updateGRFArrowGeometry() {
   context_->queueRender();
 }
 
+void WholeBodyStateDisplay::updateSupportEnable() {
+  support_enable_ = support_enable_property_->getBool();
+  if (support_visual_ && !support_enable_) {
+    support_visual_.reset();
+  }
+  context_->queueRender();
+}
+
 void WholeBodyStateDisplay::updateSupportLineColorAndAlpha() {
   Ogre::ColourValue color = support_line_color_property_->getOgreColor();
   color.a = support_line_alpha_property_->getFloat();
@@ -373,6 +447,14 @@ void WholeBodyStateDisplay::updateSupportMeshColorAndAlpha() {
   color.a = support_mesh_alpha_property_->getFloat();
   if (support_visual_) {
     support_visual_->setMeshColor(color.r, color.g, color.b, color.a);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateFrictionConeEnable() {
+  cone_enable_ = friction_cone_enable_property_->getBool();
+  if (cones_visual_.size() == 0 && !cone_enable_) {
+    cones_visual_.clear();
   }
   context_->queueRender();
 }
@@ -422,10 +504,16 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   }
 
   // Resetting the point visualizers
-  com_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
-  comd_visual_.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
-  support_visual_.reset(
-      new PolygonVisual(context_->getSceneManager(), scene_node_));
+  if (com_enable_) {
+    com_visual_.reset(
+        new PointVisual(context_->getSceneManager(), scene_node_));
+    comd_visual_.reset(
+        new ArrowVisual(context_->getSceneManager(), scene_node_));
+  }
+  if (support_enable_) {
+    support_visual_.reset(
+        new PolygonVisual(context_->getSceneManager(), scene_node_));
+  }
 
   // Now set or update the contents of the chosen GRF visual
   std::vector<Ogre::Vector3> support;
@@ -470,30 +558,32 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
       // We are keeping a vector of visual pointers. This creates the next
       // one and stores it in the vector
-      boost::shared_ptr<ArrowVisual> arrow;
-      arrow.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
-      arrow->setArrow(contact_pos, contact_for_orientation);
-      arrow->setFramePosition(position);
-      arrow->setFrameOrientation(orientation);
+      if (grf_enable_) {
+        boost::shared_ptr<ArrowVisual> arrow;
+        arrow.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
+        arrow->setArrow(contact_pos, contact_for_orientation);
+        arrow->setFramePosition(position);
+        arrow->setFrameOrientation(orientation);
 
-      // Setting the arrow color and properties
-      Ogre::ColourValue color = grf_color_property_->getOgreColor();
-      color.a = grf_alpha_property_->getFloat();
-      arrow->setColor(color.r, color.g, color.b, color.a);
-      const float &shaft_length =
-          grf_shaft_length_property_->getFloat() * for_dir.norm() / weight_;
-      const float &shaft_radius = grf_shaft_radius_property_->getFloat();
-      const float &head_length = grf_head_length_property_->getFloat();
-      const float &head_radius = grf_head_radius_property_->getFloat();
-      arrow->setProperties(shaft_length, shaft_radius, head_length,
-                           head_radius);
+        // Setting the arrow color and properties
+        Ogre::ColourValue color = grf_color_property_->getOgreColor();
+        color.a = grf_alpha_property_->getFloat();
+        arrow->setColor(color.r, color.g, color.b, color.a);
+        const float &shaft_length =
+            grf_shaft_length_property_->getFloat() * for_dir.norm() / weight_;
+        const float &shaft_radius = grf_shaft_radius_property_->getFloat();
+        const float &head_length = grf_head_length_property_->getFloat();
+        const float &head_radius = grf_head_radius_property_->getFloat();
+        arrow->setProperties(shaft_length, shaft_radius, head_length,
+                             head_radius);
 
-      // And send it to the end of the vector
-      if (std::isfinite(shaft_length) && std::isfinite(shaft_radius) &&
-          std::isfinite(head_length) && std::isfinite(head_radius)) {
-        grf_visual_.push_back(arrow);
+        // And send it to the end of the vector
+        if (std::isfinite(shaft_length) && std::isfinite(shaft_radius) &&
+            std::isfinite(head_length) && std::isfinite(head_radius)) {
+          grf_visual_.push_back(arrow);
+        }
       }
-      if (contact.type == 0) {
+      if (contact.type == 0 && support_enable_) {
         support.push_back(contact_pos);
       }
     }
@@ -502,8 +592,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     Eigen::Vector3d cone_dir(contact.surface_normal.x, contact.surface_normal.y,
                              contact.surface_normal.z);
     friction_mu_ = contact.friction_coefficient;
-    if (for_dir.norm() > force_threshold_ && cone_dir.norm() != 0 &&
-        friction_mu_ != 0) {
+    if (cone_enable_ && for_dir.norm() > force_threshold_ &&
+        cone_dir.norm() != 0 && friction_mu_ != 0) {
       Eigen::Vector3d cone_ref_dir = -Eigen::Vector3d::UnitY();
       Eigen::Quaterniond cone_q;
       cone_q.setFromTwoVectors(cone_ref_dir, cone_dir);
@@ -563,7 +653,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
   // Now set or update the contents of the chosen CoM visual
   updateCoMColorAndAlpha();
-  if (std::isfinite(com_point.x) && std::isfinite(com_point.y) &&
+  if (com_enable_ && std::isfinite(com_point.x) && std::isfinite(com_point.y) &&
       std::isfinite(com_point.z)) {
     com_visual_->setPoint(com_point);
     com_visual_->setFramePosition(position);
@@ -586,16 +676,22 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
   // Now set or update the contents of the chosen CoP visual
   if (n_suppcontacts != 0) {
-    cop_visual_.reset(
-        new PointVisual(context_->getSceneManager(), scene_node_));
-    icp_visual_.reset(
-        new PointVisual(context_->getSceneManager(), scene_node_));
-    cmp_visual_.reset(
-        new PointVisual(context_->getSceneManager(), scene_node_));
+    if (cop_enable_) {
+      cop_visual_.reset(
+          new PointVisual(context_->getSceneManager(), scene_node_));
+    }
+    if (icp_enable_) {
+      icp_visual_.reset(
+          new PointVisual(context_->getSceneManager(), scene_node_));
+    }
+    if (cmp_enable_) {
+      cmp_visual_.reset(
+          new PointVisual(context_->getSceneManager(), scene_node_));
+    }
 
-    updateCoPColorAndAlpha();
-    if (std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) &&
+    if (cop_enable_ && std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) &&
         std::isfinite(cop_pos(2))) {
+      updateCoPColorAndAlpha();
       Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
       cop_visual_->setPoint(cop_point);
       cop_visual_->setFramePosition(position);
@@ -612,9 +708,9 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     icp_pos(2) = cop_pos(2);
 
     // Now set or update the contents of the chosen Inst CP visual
-    updateICPColorAndAlpha();
-    if (std::isfinite(icp_pos(0)) && std::isfinite(icp_pos(1)) &&
+    if (icp_enable_ && std::isfinite(icp_pos(0)) && std::isfinite(icp_pos(1)) &&
         std::isfinite(icp_pos(2))) {
+      updateICPColorAndAlpha();
       Ogre::Vector3 icp_point(icp_pos(0), icp_pos(1), icp_pos(2));
       icp_visual_->setPoint(icp_point);
       icp_visual_->setFramePosition(position);
@@ -626,9 +722,9 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     cmp_pos(0) = com_pos(0) - total_force(0) / total_force(2) * height;
     cmp_pos(1) = com_pos(1) - total_force(1) / total_force(2) * height;
     cmp_pos(2) = com_pos(2) - height;
-    updateCMPColorAndAlpha();
-    if (std::isfinite(cmp_pos(0)) && std::isfinite(cmp_pos(1)) &&
+    if (cmp_enable_ && std::isfinite(cmp_pos(0)) && std::isfinite(cmp_pos(1)) &&
         std::isfinite(cmp_pos(2))) {
+      updateCMPColorAndAlpha();
       Ogre::Vector3 cmp_point(cmp_pos(0), cmp_pos(1), cmp_pos(2));
       cmp_visual_->setPoint(cmp_point);
       cmp_visual_->setFramePosition(position);
@@ -636,28 +732,24 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     }
   } else {
     if (cop_visual_) {
-      Ogre::ColourValue color = cop_color_property_->getOgreColor();
-      color.a = 0.;
-      cop_visual_->setColor(color.r, color.g, color.b, color.a);
+      cop_visual_.reset();
     }
     if (icp_visual_) {
-      Ogre::ColourValue color = icp_color_property_->getOgreColor();
-      color.a = 0.;
-      icp_visual_->setColor(color.r, color.g, color.b, color.a);
+      icp_visual_.reset();
     }
     if (cmp_visual_) {
-      Ogre::ColourValue color = cmp_color_property_->getOgreColor();
-      color.a = 0.;
-      cmp_visual_->setColor(color.r, color.g, color.b, color.a);
+      cmp_visual_.reset();
     }
   }
 
   // Now set or update the contents of the chosen CoP visual
-  support_visual_->setVertices(support);
-  updateSupportLineColorAndAlpha();
-  updateSupportMeshColorAndAlpha();
-  support_visual_->setFramePosition(position);
-  support_visual_->setFrameOrientation(orientation);
+  if (support_enable_) {
+    support_visual_->setVertices(support);
+    updateSupportLineColorAndAlpha();
+    updateSupportMeshColorAndAlpha();
+    support_visual_->setFramePosition(position);
+    support_visual_->setFrameOrientation(orientation);
+  }
 }
 
 } // namespace state_rviz_plugin

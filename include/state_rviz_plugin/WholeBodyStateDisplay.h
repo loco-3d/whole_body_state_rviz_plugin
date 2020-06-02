@@ -28,6 +28,7 @@ class SceneNode;
 }
 
 namespace rviz {
+class BoolProperty;
 class EnumProperty;
 class ColorProperty;
 class FloatProperty;
@@ -79,16 +80,23 @@ private Q_SLOTS:
   /** @brief Helper function to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
   void updateRobotModel();
+  void updateCoMEnable();
   void updateCoMStyle();
   void updateCoMColorAndAlpha();
   void updateCoMArrowGeometry();
+  void updateCoPEnable();
   void updateCoPColorAndAlpha();
+  void updateICPEnable();
   void updateICPColorAndAlpha();
+  void updateCMPEnable();
   void updateCMPColorAndAlpha();
+  void updateGRFEnable();
   void updateGRFColorAndAlpha();
   void updateGRFArrowGeometry();
+  void updateSupportEnable();
   void updateSupportLineColorAndAlpha();
   void updateSupportMeshColorAndAlpha();
+  void updateFrictionConeEnable();
   void updateFrictionConeColorAndAlpha();
   void updateFrictionConeGeometry();
 
@@ -120,9 +128,11 @@ private:
   boost::shared_ptr<PointVisual> icp_visual_;
   std::vector<boost::shared_ptr<ArrowVisual>> grf_visual_;
   boost::shared_ptr<PolygonVisual> support_visual_;
+  std::vector<boost::shared_ptr<rviz::Shape>> cones_visual_;
 
   /** @brief Property objects for user-editable properties */
   rviz::StringProperty *robot_model_property_;
+  rviz::BoolProperty *com_enable_property_;
   rviz::EnumProperty *com_style_property_;
   rviz::ColorProperty *com_color_property_;
   rviz::FloatProperty *com_alpha_property_;
@@ -132,18 +142,22 @@ private:
   rviz::FloatProperty *com_shaft_radius_property_;
   rviz::FloatProperty *com_shaft_length_property_;
 
+  rviz::BoolProperty *cop_enable_property_;
   rviz::ColorProperty *cop_color_property_;
   rviz::FloatProperty *cop_alpha_property_;
   rviz::FloatProperty *cop_radius_property_;
 
+  rviz::BoolProperty *icp_enable_property_;
   rviz::ColorProperty *icp_color_property_;
   rviz::FloatProperty *icp_alpha_property_;
   rviz::FloatProperty *icp_radius_property_;
 
+  rviz::BoolProperty *cmp_enable_property_;
   rviz::ColorProperty *cmp_color_property_;
   rviz::FloatProperty *cmp_alpha_property_;
   rviz::FloatProperty *cmp_radius_property_;
 
+  rviz::BoolProperty *grf_enable_property_;
   rviz::ColorProperty *grf_color_property_;
   rviz::FloatProperty *grf_alpha_property_;
   rviz::FloatProperty *grf_head_radius_property_;
@@ -151,6 +165,7 @@ private:
   rviz::FloatProperty *grf_shaft_radius_property_;
   rviz::FloatProperty *grf_shaft_length_property_;
 
+  rviz::BoolProperty *support_enable_property_;
   rviz::ColorProperty *support_line_color_property_;
   rviz::FloatProperty *support_line_alpha_property_;
   rviz::FloatProperty *support_line_radius_property_;
@@ -158,6 +173,7 @@ private:
   rviz::FloatProperty *support_mesh_alpha_property_;
   rviz::FloatProperty *support_force_threshold_property_;
 
+  rviz::BoolProperty *friction_cone_enable_property_;
   rviz::ColorProperty *friction_cone_color_property_;
   rviz::FloatProperty *friction_cone_alpha_property_;
   rviz::FloatProperty *friction_cone_length_property_;
@@ -165,14 +181,23 @@ private:
   /** @brief Whole-body dynamics */
   pinocchio::Model model_;
 
-  std::vector<boost::shared_ptr<rviz::Shape>>
-      cones_visual_;       //!< Handles actually drawing the cones
   double force_threshold_; //!< Force threshold for detecting active contacts
   double weight_;          //!< Weight of the robot
   double gravity_;         //!< Gravity acceleration
   double friction_mu_;     //!< Friction coefficient
   enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
-  bool com_real_;
+  bool com_real_;   //!< Label to indicates the type of CoM display (real or
+                    //!< projected)
+  bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
+  bool cop_enable_; //!< Flag that indicates if the CoP visualization is enable
+  bool icp_enable_; //!< Flag that indicates if the ICP visualization is enable
+  bool cmp_enable_; //!< Flag that indicates if the CMP visualization is enable
+  bool grf_enable_; //!< Flag that indicates if the contact forces visualization
+                    //!< is enable
+  bool support_enable_; //!< Flag that indicates if the support polygon
+                        //!< visualization is enable
+  bool cone_enable_;    //!< Flag that indicates if the friction cone polygon
+                        //!< visualization is enable
 };
 
 } // namespace state_rviz_plugin
