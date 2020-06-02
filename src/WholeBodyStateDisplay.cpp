@@ -538,14 +538,16 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
     // Updating the center of pressure
     if (contact.type == 0) {
-      n_suppcontacts += 1;
       cop_pos +=
           contact.wrench.force.z * Eigen::Vector3d(contact.pose.position.x,
                                                    contact.pose.position.y,
                                                    contact.pose.position.z);
-      total_force +=
-          Eigen::Vector3d(contact.wrench.force.x, contact.wrench.force.y,
+      Eigen::Vector3d force_lin = Eigen::Vector3d(contact.wrench.force.x, contact.wrench.force.y,
                           contact.wrench.force.z);
+      total_force += force_lin;
+      if (force_lin.norm() != 0) {
+        n_suppcontacts += 1;
+      }
     }
 
     // Building the support polygone
