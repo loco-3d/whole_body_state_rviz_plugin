@@ -394,7 +394,7 @@ void WholeBodyStateDisplay::updateCMPColorAndAlpha() {
 
 void WholeBodyStateDisplay::updateGRFEnable() {
   grf_enable_ = grf_enable_property_->getBool();
-  if (grf_visual_.size() == 0 && !grf_enable_) {
+  if (grf_visual_.size() != 0 && !grf_enable_) {
     grf_visual_.clear();
   }
   context_->queueRender();
@@ -453,7 +453,7 @@ void WholeBodyStateDisplay::updateSupportMeshColorAndAlpha() {
 
 void WholeBodyStateDisplay::updateFrictionConeEnable() {
   cone_enable_ = friction_cone_enable_property_->getBool();
-  if (cones_visual_.size() == 0 && !cone_enable_) {
+  if (cones_visual_.size() != 0 && !cone_enable_) {
     cones_visual_.clear();
   }
   context_->queueRender();
