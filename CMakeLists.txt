@@ -71,7 +71,7 @@ catkin_package(
   CATKIN_DEPENDS roscpp rviz)
 
 
-INCLUDE_DIRECTORIES(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${pinocchio_INCLUDE_DIRS})
 LINK_DIRECTORIES(${catkin_LIBRARY_DIRS}
                  ${Boost_LIBRARY_DIRS})
                  
