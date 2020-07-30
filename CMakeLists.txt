@@ -7,7 +7,7 @@ SET(PROJECT_DESCRIPTION "State rviz plugin")
 
 # Print initial message
 MESSAGE(STATUS "${PROJECT_DESCRIPTION}, version ${PROJECT_VERSION}")
-MESSAGE("Copyright (C) 2020-2022 University of Edinburgh")
+MESSAGE("Copyright (C) 2020 University of Edinburgh, Istituto Italiano di Tecnologia")
 MESSAGE("All rights reserved.")
 MESSAGE("Released under the BSD 3-Clause License.")
 
