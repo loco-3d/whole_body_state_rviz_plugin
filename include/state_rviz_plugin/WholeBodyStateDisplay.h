@@ -35,7 +35,7 @@ namespace state_rviz_plugin {
 
 /**
  * @class WholeBodyStateDisplay
- * @brief Displays a dwl_msgs::WholeBodyState message
+ * @brief Displays a state_msgs::WholeBodyState message
  */
 class WholeBodyStateDisplay
     : public rviz::MessageFilterDisplay<state_msgs::WholeBodyState> {
