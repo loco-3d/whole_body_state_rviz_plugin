@@ -7,4 +7,11 @@
 		Displays the whole-body state published.
 	</description>
 	</class>
+	<class name="state_rviz_plugin/WholeBodyTrajectory"
+           type="state_rviz_plugin::WholeBodyTrajectoryDisplay"
+           base_class_type="rviz::Display">
+	<description>
+		Displays the whole-body trajectory generated.
+	</description>
+	</class>
 </library>

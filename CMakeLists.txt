@@ -40,7 +40,7 @@ IF(rviz_QT_VERSION VERSION_LESS "5")
     include/state_rviz_plugin/ArrowVisual.h
     include/state_rviz_plugin/PolygonVisual.h
     include/state_rviz_plugin/WholeBodyStateDisplay.h
-    # include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
+    include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
     # include/state_rviz_plugin/ReducedTrajectoryDisplay.h
     # include/state_rviz_plugin/FootstepRegionDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
@@ -56,7 +56,7 @@ ELSE()
     include/state_rviz_plugin/ArrowVisual.h
     include/state_rviz_plugin/PolygonVisual.h
     include/state_rviz_plugin/WholeBodyStateDisplay.h
-    # include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
+    include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
     # include/state_rviz_plugin/ReducedTrajectoryDisplay.h
     # include/state_rviz_plugin/FootstepRegionDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
@@ -82,7 +82,7 @@ SET(SOURCE_FILES
   src/ArrowVisual.cpp
   src/PolygonVisual.cpp
   src/WholeBodyStateDisplay.cpp
-  # src/WholeBodyTrajectoryDisplay.cpp
+  src/WholeBodyTrajectoryDisplay.cpp
   # src/ReducedTrajectoryDisplay.cpp
   # src/FootstepRegionDisplay.cpp
   ${MOC_FILES})
