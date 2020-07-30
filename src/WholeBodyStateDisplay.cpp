@@ -6,14 +6,12 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "state_rviz_plugin/WholeBodyStateDisplay.h"
 #include <Eigen/Dense>
-
-#include <pinocchio/algorithm/center-of-mass.hpp>
-#include <pinocchio/parsers/urdf.hpp>
-
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
-
+#include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/parsers/urdf.hpp>
 #include <rviz/frame_manager.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/enum_property.h>
@@ -21,8 +19,6 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/validate_floats.h>
 #include <rviz/visualization_manager.h>
-
-#include "state_rviz_plugin/WholeBodyStateDisplay.h"
 
 using namespace rviz;
 
@@ -542,7 +538,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
           contact.wrench.force.z * Eigen::Vector3d(contact.pose.position.x,
                                                    contact.pose.position.y,
                                                    contact.pose.position.z);
-      Eigen::Vector3d force_lin = Eigen::Vector3d(contact.wrench.force.x, contact.wrench.force.y,
+      Eigen::Vector3d force_lin =
+          Eigen::Vector3d(contact.wrench.force.x, contact.wrench.force.y,
                           contact.wrench.force.z);
       total_force += force_lin;
       if (force_lin.norm() != 0) {

@@ -12,15 +12,10 @@
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/model.hpp>
 
-#ifndef Q_MOC_RUN
-#include <boost/circular_buffer.hpp>
-#endif
-
-#include <rviz/message_filter_display.h>
-
 #include "state_rviz_plugin/ArrowVisual.h"
 #include "state_rviz_plugin/PointVisual.h"
 #include "state_rviz_plugin/PolygonVisual.h"
+#include <rviz/message_filter_display.h>
 #include <state_msgs/WholeBodyState.h>
 
 namespace Ogre {
