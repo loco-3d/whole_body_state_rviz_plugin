@@ -66,8 +66,9 @@ public:
 private Q_SLOTS:
   /** @brief Helper function to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
-  void updateBaseStyle();
-  void updateBaseLineProperties();
+  void updateCoMEnable();
+  void updateCoMStyle();
+  void updateCoMLineProperties();
   void updateContactStyle();
   void updateContactLineProperties();
   void pushBackCoMAxes(const Ogre::Vector3 &axes_position,
@@ -75,7 +76,7 @@ private Q_SLOTS:
 
 private:
   /** @brief Process the trajectories */
-  void processBaseTrajectory();
+  void processCoMTrajectory();
   void processContactTrajectory();
 
   /** Destroy all the objects for visualization */
@@ -101,6 +102,7 @@ private:
   std::vector<std::vector<boost::shared_ptr<PointVisual>>> contact_points_;
 
   /** @brief Property objects for user-editable properties */
+  rviz::BoolProperty *com_enable_property_;
   rviz::EnumProperty *com_style_property_;
   rviz::ColorProperty *com_color_property_;
   rviz::FloatProperty *com_alpha_property_;
@@ -114,7 +116,9 @@ private:
 
   Ogre::Vector3 last_point_position_;
 
-  enum LineStyle { LINES, BILLBOARDS, POINTS };
+  enum LineStyle { BILLBOARDS, LINES, POINTS };
+
+  bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
 };
 
 } // namespace state_rviz_plugin
