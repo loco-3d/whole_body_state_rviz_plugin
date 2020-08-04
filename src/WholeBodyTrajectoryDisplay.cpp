@@ -8,6 +8,7 @@
 
 #include "state_rviz_plugin/WholeBodyTrajectoryDisplay.h"
 #include <Eigen/Dense>
+#include <QTimer>
 #include <OgreBillboardSet.h>
 #include <OgreManualObject.h>
 #include <OgreMatrix4.h>
@@ -30,11 +31,36 @@ using namespace rviz;
 
 namespace state_rviz_plugin {
 
+void linkUpdaterStatusFunction(rviz::StatusLevel level,
+                               const std::string& link_name,
+                               const std::string& text,
+                               WholeBodyTrajectoryDisplay* display) {
+  display->setStatus(level, QString::fromStdString(link_name), QString::fromStdString(text));
+}
+
 WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
     : is_info_(false), com_enable_(true), com_axes_enable_(true), contact_enable_(true), contact_axes_enable_(true) {
   // Category Groups
+  robot_category_ = new rviz::Property("Target", QVariant(), "", this);
   com_category_ = new rviz::Property("Center of Mass", QVariant(), "", this);
   contact_category_ = new rviz::Property("End-Effector", QVariant(), "", this);
+
+  // Robot properties
+  robot_description_property_ =
+      new StringProperty("Robot Description", "robot_description",
+                         "Name of the parameter to search for to load the robot description.",
+                         robot_category_, SLOT(updateRobotDescription()), this);
+  robot_visual_enabled_property_ =
+      new Property("Robot Visual", true, "Whether to display the visual representation of the robot.",
+                   robot_category_, SLOT(updateRobotVisualVisible()), this);
+  robot_collision_enabled_property_ =
+      new Property("Robot Collision", false,
+                   "Whether to display the collision representation of the robot.", robot_category_,
+                   SLOT(updateRobotCollisionVisible()), this);
+  robot_alpha_property_ = new FloatProperty("Alpha", 0.2, "Amount of transparency to apply to the links.",
+                          robot_category_,  SLOT(updateRobotAlpha()), this);
+  robot_alpha_property_->setMin(0.0);
+  robot_alpha_property_->setMax(1.0);
 
   // Base trajectory properties
   com_enable_property_ =
@@ -99,7 +125,23 @@ WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
 
 WholeBodyTrajectoryDisplay::~WholeBodyTrajectoryDisplay() { destroyObjects(); }
 
-void WholeBodyTrajectoryDisplay::onInitialize() { MFDClass::onInitialize(); }
+void WholeBodyTrajectoryDisplay::onInitialize() {
+  MFDClass::onInitialize();
+  robot_.reset(new rviz::Robot(scene_node_, context_, "Robot: " + getName().toStdString(), this));
+  updateRobotVisualVisible();
+  updateRobotCollisionVisible();
+  updateRobotAlpha();
+}
+
+void WholeBodyTrajectoryDisplay::onEnable() {
+  loadRobotModel();
+  robot_->setVisible(true);
+}
+
+void WholeBodyTrajectoryDisplay::onDisable() {
+  robot_->setVisible(false);
+  clearRobotModel();
+}
 
 void WholeBodyTrajectoryDisplay::fixedFrameChanged() {
   if (is_info_) {
@@ -134,6 +176,26 @@ void WholeBodyTrajectoryDisplay::updateCoMStyle() {
   if (is_info_) {
     processCoMTrajectory();
   }
+}
+
+void WholeBodyTrajectoryDisplay::updateRobotDescription() {
+  if (isEnabled())
+    loadRobotModel();
+}
+
+void WholeBodyTrajectoryDisplay::updateRobotVisualVisible() {
+  robot_->setVisualVisible(robot_visual_enabled_property_->getValue().toBool());
+  context_->queueRender();
+}
+
+void WholeBodyTrajectoryDisplay::updateRobotCollisionVisible() {
+  robot_->setCollisionVisible(robot_collision_enabled_property_->getValue().toBool());
+  context_->queueRender();
+}
+
+void WholeBodyTrajectoryDisplay::updateRobotAlpha() {
+  robot_->setAlpha(robot_alpha_property_->getFloat());
+  context_->queueRender();
 }
 
 void WholeBodyTrajectoryDisplay::updateCoMEnable() {
@@ -339,6 +401,27 @@ void WholeBodyTrajectoryDisplay::processMessage(
   is_info_ = true;
   // Destroy all the old elements
   destroyObjects();
+
+
+  const state_msgs::WholeBodyState &state = msg_->trajectory.back();
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(model_.nq);
+  q(3) = state.centroidal.base_orientation.x;
+  q(4) = state.centroidal.base_orientation.y;
+  q(5) = state.centroidal.base_orientation.z;
+  q(6) = state.centroidal.base_orientation.w;
+  std::size_t n_joints = state.joints.size();
+  for (std::size_t j = 0; j < n_joints; ++j) {
+    pinocchio::JointIndex jointId = model_.getJointId(state.joints[j].name) - 2;
+    q(jointId + 7) = state.joints[j].position;
+  }
+  pinocchio::centerOfMass(model_, data_, q);
+  q(0) = state.centroidal.com_position.x + data_.com[0](0);
+  q(1) = state.centroidal.com_position.y + data_.com[0](1);
+  q(2) = state.centroidal.com_position.z + data_.com[0](2);
+  robot_->update(PinocchioLinkUpdater(model_, data_, q,
+                               boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
+
+
   // Visualization of the base trajectory
   processCoMTrajectory();
   // Visualization of the end-effector trajectory
@@ -631,6 +714,55 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
       }
     }
   }
+}
+
+void WholeBodyTrajectoryDisplay::loadRobotModel() {
+  clearStatuses();
+  context_->queueRender();
+  std::string content;
+  if (!update_nh_.getParam(robot_description_property_->getStdString(), content)) {
+    std::string loc;
+    if (update_nh_.searchParam(robot_description_property_->getStdString(), loc)) {
+      update_nh_.getParam(loc, content);
+    } else {
+      clearRobotModel();
+      setStatus(StatusProperty::Error, "URDF",
+                "Parameter [" + robot_description_property_->getString() +
+                    "] does not exist, and was not found by searchParam()");
+      // try again in a second
+      QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
+      return;
+    }
+  }
+  if (content.empty()) {
+    clearRobotModel();
+    setStatus(StatusProperty::Error, "URDF", "URDF is empty");
+    return;
+  }
+  if (content == robot_description_) {
+    return;
+  }
+  robot_description_ = content;
+  pinocchio::urdf::buildModelFromXML(robot_description_,
+                                     pinocchio::JointModelFreeFlyer(), model_);
+  data_ = pinocchio::Data(model_);
+  urdf::Model descr;
+  if (!descr.initString(robot_description_)) {
+    clearRobotModel();
+    setStatus(StatusProperty::Error, "URDF", "Failed to parse URDF model");
+    return;
+  }
+  robot_->load(descr);
+  setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
+}
+
+void WholeBodyTrajectoryDisplay::clearRobotModel()
+{
+  robot_->clear();
+  clearStatuses();
+  robot_description_.clear();
+  model_ = pinocchio::Model();
+  data_ = pinocchio::Data();
 }
 
 void WholeBodyTrajectoryDisplay::destroyObjects() {

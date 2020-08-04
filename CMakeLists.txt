@@ -39,6 +39,7 @@ IF(rviz_QT_VERSION VERSION_LESS "5")
     include/state_rviz_plugin/LineVisual.h
     include/state_rviz_plugin/ArrowVisual.h
     include/state_rviz_plugin/PolygonVisual.h
+    include/state_rviz_plugin/PinocchioLinkUpdater.h
     include/state_rviz_plugin/WholeBodyStateDisplay.h
     include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
@@ -53,6 +54,7 @@ ELSE()
     include/state_rviz_plugin/LineVisual.h
     include/state_rviz_plugin/ArrowVisual.h
     include/state_rviz_plugin/PolygonVisual.h
+    include/state_rviz_plugin/PinocchioLinkUpdater.h
     include/state_rviz_plugin/WholeBodyStateDisplay.h
     include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
@@ -77,10 +79,9 @@ SET(SOURCE_FILES
   src/LineVisual.cpp
   src/ArrowVisual.cpp
   src/PolygonVisual.cpp
+  src/PinocchioLinkUpdater.cpp
   src/WholeBodyStateDisplay.cpp
   src/WholeBodyTrajectoryDisplay.cpp
-  # src/ReducedTrajectoryDisplay.cpp
-  # src/FootstepRegionDisplay.cpp
   ${MOC_FILES})
 
 

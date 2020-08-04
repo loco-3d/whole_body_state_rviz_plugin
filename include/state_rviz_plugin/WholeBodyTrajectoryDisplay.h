@@ -9,10 +9,14 @@
 #ifndef STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
 #define STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
 
+#include <pinocchio/parsers/urdf.hpp>
+#include <pinocchio/algorithm/center-of-mass.hpp>
+#include <state_rviz_plugin/PinocchioLinkUpdater.h>
+
 #include <rviz/message_filter_display.h>
+#include <rviz/robot/robot.h>
 #include <state_msgs/WholeBodyTrajectory.h>
 #include <state_rviz_plugin/PointVisual.h>
-// #include <dwl/utils/RigidBodyDynamics.h>
 
 namespace Ogre {
 class ManualObject;
@@ -47,10 +51,14 @@ public:
   ~WholeBodyTrajectoryDisplay();
 
   /** @brief Clear the visuals by deleting their objects */
-  void reset();
+  void reset() override;
 
   /** @brief Overridden from Display. */
-  void onInitialize();
+  void onInitialize() override;
+
+  void onEnable() override;
+
+  void onDisable() override;
 
   /** @brief Called when the fixed frame changed */
   void fixedFrameChanged();
@@ -66,6 +74,10 @@ public:
 private Q_SLOTS:
   /** @brief Helper function to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
+  void updateRobotDescription();
+  void updateRobotVisualVisible();
+  void updateRobotCollisionVisible();
+  void updateRobotAlpha();
   void updateCoMEnable();
   void updateCoMStyle();
   void updateCoMLineProperties();
@@ -82,6 +94,9 @@ private:
   void processCoMTrajectory();
   void processContactTrajectory();
 
+  void loadRobotModel();
+  void clearRobotModel();
+
   /** Destroy all the objects for visualization */
   void destroyObjects();
 
@@ -92,10 +107,12 @@ private:
   bool is_info_;
 
   /** @brief Properties to show on side panel */
+  rviz::Property *robot_category_;
   rviz::Property *com_category_;
   rviz::Property *contact_category_;
 
   /** @brief Object for visualization of the data */
+  boost::shared_ptr<rviz::Robot> robot_;
   boost::shared_ptr<Ogre::ManualObject> com_manual_object_;
   boost::shared_ptr<rviz::BillboardLine> com_billboard_line_;
   std::vector<boost::shared_ptr<PointVisual>> com_points_;
@@ -106,6 +123,10 @@ private:
   std::vector<boost::shared_ptr<rviz::Axes>> contact_axes_;
 
   /** @brief Property objects for user-editable properties */
+  rviz::StringProperty* robot_description_property_;
+  rviz::Property* robot_visual_enabled_property_;
+  rviz::Property* robot_collision_enabled_property_;
+  rviz::FloatProperty* robot_alpha_property_;
   rviz::BoolProperty *com_enable_property_;
   rviz::EnumProperty *com_style_property_;
   rviz::ColorProperty *com_color_property_;
@@ -124,6 +145,9 @@ private:
 
   enum LineStyle { BILLBOARDS, LINES, POINTS };
 
+  std::string robot_description_;
+  pinocchio::Model model_;
+  pinocchio::Data data_;
   bool com_enable_;     //!< Flag that indicates if the CoM visualization is enable
   bool com_axes_enable_;     //!< Flag that indicates if the CoM axes visualization is enable
   bool contact_enable_; //!< Flag that indicates if the contact visualization is enable
