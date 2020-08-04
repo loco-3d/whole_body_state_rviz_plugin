@@ -74,6 +74,7 @@ public:
 private Q_SLOTS:
   /** @brief Helper function to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
+  void updateTargetEnable();
   void updateRobotDescription();
   void updateRobotVisualVisible();
   void updateRobotCollisionVisible();
@@ -91,6 +92,7 @@ private Q_SLOTS:
 
 private:
   /** @brief Process the trajectories */
+  void processTargetPosture();
   void processCoMTrajectory();
   void processContactTrajectory();
 
@@ -107,7 +109,7 @@ private:
   bool is_info_;
 
   /** @brief Properties to show on side panel */
-  rviz::Property *robot_category_;
+  rviz::Property *target_category_;
   rviz::Property *com_category_;
   rviz::Property *contact_category_;
 
@@ -123,6 +125,7 @@ private:
   std::vector<boost::shared_ptr<rviz::Axes>> contact_axes_;
 
   /** @brief Property objects for user-editable properties */
+  rviz::BoolProperty *target_enable_property_;
   rviz::StringProperty* robot_description_property_;
   rviz::Property* robot_visual_enabled_property_;
   rviz::Property* robot_collision_enabled_property_;
@@ -148,6 +151,7 @@ private:
   std::string robot_description_;
   pinocchio::Model model_;
   pinocchio::Data data_;
+  bool target_enable_;     //!< Flag that indicates if the target visualization is enable
   bool com_enable_;     //!< Flag that indicates if the CoM visualization is enable
   bool com_axes_enable_;     //!< Flag that indicates if the CoM axes visualization is enable
   bool contact_enable_; //!< Flag that indicates if the contact visualization is enable
