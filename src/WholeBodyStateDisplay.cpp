@@ -250,19 +250,15 @@ void WholeBodyStateDisplay::load() {
       return;
     }
   }
-
   if (content.empty()) {
     clear();
     setStatus(StatusProperty::Error, "URDF", "URDF is empty");
     return;
   }
-
   if (content == robot_model_) {
     return;
   }
-
   robot_model_ = content;
-
   // Initializing the dynamics from the URDF model
   pinocchio::urdf::buildModelFromXML(robot_model_,
                                      pinocchio::JointModelFreeFlyer(), model_);
