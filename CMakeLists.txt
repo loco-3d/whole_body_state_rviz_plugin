@@ -41,8 +41,6 @@ IF(rviz_QT_VERSION VERSION_LESS "5")
     include/state_rviz_plugin/PolygonVisual.h
     include/state_rviz_plugin/WholeBodyStateDisplay.h
     include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
-    # include/state_rviz_plugin/ReducedTrajectoryDisplay.h
-    # include/state_rviz_plugin/FootstepRegionDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
 ELSE()
   MESSAGE(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
@@ -57,8 +55,6 @@ ELSE()
     include/state_rviz_plugin/PolygonVisual.h
     include/state_rviz_plugin/WholeBodyStateDisplay.h
     include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
-    # include/state_rviz_plugin/ReducedTrajectoryDisplay.h
-    # include/state_rviz_plugin/FootstepRegionDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
 ENDIF()
 

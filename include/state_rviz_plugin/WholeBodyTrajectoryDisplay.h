@@ -69,6 +69,7 @@ private Q_SLOTS:
   void updateCoMEnable();
   void updateCoMStyle();
   void updateCoMLineProperties();
+  void updateContactEnable();
   void updateContactStyle();
   void updateContactLineProperties();
   void pushBackCoMAxes(const Ogre::Vector3 &axes_position,
@@ -109,6 +110,7 @@ private:
   rviz::FloatProperty *com_line_width_property_;
   rviz::FloatProperty *com_scale_property_;
 
+  rviz::BoolProperty *contact_enable_property_;
   rviz::EnumProperty *contact_style_property_;
   rviz::ColorProperty *contact_color_property_;
   rviz::FloatProperty *contact_alpha_property_;
@@ -118,7 +120,8 @@ private:
 
   enum LineStyle { BILLBOARDS, LINES, POINTS };
 
-  bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
+  bool com_enable_;     //!< Flag that indicates if the CoM visualization is enable
+  bool contact_enable_; //!< Flag that indicates if the CoM visualization is enable
 };
 
 } // namespace state_rviz_plugin
