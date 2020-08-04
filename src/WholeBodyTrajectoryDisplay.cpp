@@ -39,7 +39,7 @@ void linkUpdaterStatusFunction(rviz::StatusLevel level,
 }
 
 WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
-    : is_info_(false), target_enable_(true), com_enable_(true), com_axes_enable_(true), contact_enable_(true), contact_axes_enable_(true) {
+    : is_info_(false), weight_(0.), target_enable_(true), com_enable_(true), com_axes_enable_(true), contact_enable_(true), contact_axes_enable_(true) {
   // Category Groups
   target_category_ = new rviz::Property("Target", QVariant(), "", this);
   com_category_ = new rviz::Property("Center of Mass", QVariant(), "", this);
@@ -60,10 +60,32 @@ WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
       new Property("Robot Collision", false,
                    "Whether to display the collision representation of the robot.", target_category_,
                    SLOT(updateRobotCollisionVisible()), this);
-  robot_alpha_property_ = new FloatProperty("Alpha", 0.2, "Amount of transparency to apply to the links.",
+  robot_alpha_property_ = new FloatProperty("Robot Alpha", 0.2, "Amount of transparency to apply to the links.",
                           target_category_,  SLOT(updateRobotAlpha()), this);
   robot_alpha_property_->setMin(0.0);
   robot_alpha_property_->setMax(1.0);
+
+  force_color_property_ =
+      new ColorProperty("Force Color", QColor(85, 0, 255), "Color to draw the arrow.",
+                        target_category_, SLOT(updateForceColorAndAlpha()), this);
+  force_alpha_property_ = new FloatProperty(
+      "Force Alpha", 0.2, "Amount of transparency to apply to the arrow.",
+      target_category_, SLOT(updateForceColorAndAlpha()), this);
+  force_alpha_property_->setMin(0);
+  force_alpha_property_->setMax(1);
+  force_shaft_length_property_ = new FloatProperty(
+      "Force Shaft Length", 0.8, "Length of the arrow's shaft, in meters.",
+      target_category_, SLOT(updateForceArrowGeometry()), this);
+  force_shaft_radius_property_ = new FloatProperty(
+      "Force Shaft Radius", 0.02, "Radius of the arrow's shaft, in meters.",
+      target_category_, SLOT(updateForceArrowGeometry()), this);
+  force_head_length_property_ = new FloatProperty(
+      "Force Head Length", 0.08, "Length of the arrow's head, in meters.",
+      target_category_, SLOT(updateForceArrowGeometry()), this);
+  force_head_radius_property_ = new FloatProperty(
+      "Force Head Radius", 0.04, "Radius of the arrow's head, in meters.",
+      target_category_, SLOT(updateForceArrowGeometry()), this);
+
 
   // Base trajectory properties
   com_enable_property_ =
@@ -201,6 +223,27 @@ void WholeBodyTrajectoryDisplay::updateRobotCollisionVisible() {
 
 void WholeBodyTrajectoryDisplay::updateRobotAlpha() {
   robot_->setAlpha(robot_alpha_property_->getFloat());
+  context_->queueRender();
+}
+
+void WholeBodyTrajectoryDisplay::updateForceColorAndAlpha() {
+  Ogre::ColourValue color = force_color_property_->getOgreColor();
+  color.a = force_alpha_property_->getFloat();
+  for (size_t i = 0; i < force_visual_.size(); ++i) {
+    force_visual_[i]->setColor(color.r, color.g, color.b, color.a);
+  }
+  context_->queueRender();
+}
+
+void WholeBodyTrajectoryDisplay::updateForceArrowGeometry() {
+  const float &shaft_length = force_shaft_length_property_->getFloat();
+  const float &shaft_radius = force_shaft_radius_property_->getFloat();
+  const float &head_length = force_head_length_property_->getFloat();
+  const float &head_radius = force_head_radius_property_->getFloat();
+  for (size_t i = 0; i < force_visual_.size(); ++i) {
+    force_visual_[i]->setProperties(shaft_length, shaft_radius, head_length,
+                                  head_radius);
+  }
   context_->queueRender();
 }
 
@@ -429,6 +472,15 @@ void WholeBodyTrajectoryDisplay::processMessage(
 
 void WholeBodyTrajectoryDisplay::processTargetPosture() {
   if (target_enable_) {
+    Ogre::Quaternion orientation;
+    Ogre::Vector3 position;
+    if (!context_->getFrameManager()->getTransform(
+            msg_->header.frame_id, msg_->header.stamp, position, orientation)) {
+      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                msg_->header.frame_id.c_str(), qPrintable(fixed_frame_));
+      return;
+    }
+
     const state_msgs::WholeBodyState &state = msg_->trajectory.back();
     Eigen::VectorXd q = Eigen::VectorXd::Zero(model_.nq);
     q(3) = state.centroidal.base_orientation.x;
@@ -446,6 +498,49 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
     q(2) = state.centroidal.com_position.z + data_.com[0](2);
     robot_->update(PinocchioLinkUpdater(model_, data_, q,
                                  boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
+
+    size_t n_contacts = state.contacts.size();
+    force_visual_.clear();
+    for (size_t i = 0; i < n_contacts; ++i) {
+      const state_msgs::ContactState &contact = state.contacts[i];
+      // Getting the contact position
+      Ogre::Vector3 contact_pos(contact.pose.position.x, contact.pose.position.y,
+                                contact.pose.position.z);
+      // Getting the force direction
+      Eigen::Vector3d for_ref_dir = -Eigen::Vector3d::UnitZ();
+      Eigen::Vector3d for_dir(contact.wrench.force.x, contact.wrench.force.y,
+                              contact.wrench.force.z);
+      if (for_dir.norm() > 0. && std::isfinite(contact_pos.x) &&
+          std::isfinite(contact_pos.y) && std::isfinite(contact_pos.z)) {
+        Eigen::Quaterniond for_q;
+        for_q.setFromTwoVectors(for_ref_dir, for_dir);
+        Ogre::Quaternion contact_for_orientation(for_q.w(), for_q.x(), for_q.y(),
+                                                 for_q.z());
+        // We are keeping a vector of visual pointers. This creates the next
+        // one and stores it in the vector
+        boost::shared_ptr<ArrowVisual> arrow;
+        arrow.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
+        arrow->setArrow(contact_pos, contact_for_orientation);
+        arrow->setFramePosition(position);
+        arrow->setFrameOrientation(orientation);
+        // Setting the arrow color and properties
+        Ogre::ColourValue color = force_color_property_->getOgreColor();
+        color.a = force_alpha_property_->getFloat();
+        arrow->setColor(color.r, color.g, color.b, color.a);
+        const float &shaft_length =
+            force_shaft_length_property_->getFloat() * for_dir.norm() / weight_;
+        const float &shaft_radius = force_shaft_radius_property_->getFloat();
+        const float &head_length = force_head_length_property_->getFloat();
+        const float &head_radius = force_head_radius_property_->getFloat();
+        arrow->setProperties(shaft_length, shaft_radius, head_length,
+                             head_radius);
+        // And send it to the end of the vector
+        if (std::isfinite(shaft_length) && std::isfinite(shaft_radius) &&
+            std::isfinite(head_length) && std::isfinite(head_radius)) {
+          force_visual_.push_back(arrow);
+        }
+      }
+    }
   }
 }
 
@@ -767,6 +862,8 @@ void WholeBodyTrajectoryDisplay::loadRobotModel() {
   pinocchio::urdf::buildModelFromXML(robot_description_,
                                      pinocchio::JointModelFreeFlyer(), model_);
   data_ = pinocchio::Data(model_);
+  double gravity = model_.gravity.linear().norm();
+  weight_ = pinocchio::computeTotalMass(model_) * gravity;
   urdf::Model descr;
   if (!descr.initString(robot_description_)) {
     clearRobotModel();

@@ -11,12 +11,13 @@
 
 #include <pinocchio/parsers/urdf.hpp>
 #include <pinocchio/algorithm/center-of-mass.hpp>
-#include <state_rviz_plugin/PinocchioLinkUpdater.h>
 
 #include <rviz/message_filter_display.h>
 #include <rviz/robot/robot.h>
 #include <state_msgs/WholeBodyTrajectory.h>
 #include <state_rviz_plugin/PointVisual.h>
+#include <state_rviz_plugin/ArrowVisual.h>
+#include <state_rviz_plugin/PinocchioLinkUpdater.h>
 
 namespace Ogre {
 class ManualObject;
@@ -79,6 +80,8 @@ private Q_SLOTS:
   void updateRobotVisualVisible();
   void updateRobotCollisionVisible();
   void updateRobotAlpha();
+  void updateForceColorAndAlpha();
+  void updateForceArrowGeometry();
   void updateCoMEnable();
   void updateCoMStyle();
   void updateCoMLineProperties();
@@ -130,6 +133,15 @@ private:
   rviz::Property* robot_visual_enabled_property_;
   rviz::Property* robot_collision_enabled_property_;
   rviz::FloatProperty* robot_alpha_property_;
+  std::vector<boost::shared_ptr<ArrowVisual>> force_visual_;
+  rviz::BoolProperty *force_enable_property_;
+  rviz::ColorProperty *force_color_property_;
+  rviz::FloatProperty *force_alpha_property_;
+  rviz::FloatProperty *force_head_radius_property_;
+  rviz::FloatProperty *force_head_length_property_;
+  rviz::FloatProperty *force_shaft_radius_property_;
+  rviz::FloatProperty *force_shaft_length_property_;
+
   rviz::BoolProperty *com_enable_property_;
   rviz::EnumProperty *com_style_property_;
   rviz::ColorProperty *com_color_property_;
@@ -151,6 +163,7 @@ private:
   std::string robot_description_;
   pinocchio::Model model_;
   pinocchio::Data data_;
+  double weight_;
   bool target_enable_;     //!< Flag that indicates if the target visualization is enable
   bool com_enable_;     //!< Flag that indicates if the CoM visualization is enable
   bool com_axes_enable_;     //!< Flag that indicates if the CoM axes visualization is enable
