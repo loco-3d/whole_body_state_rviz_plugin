@@ -74,6 +74,8 @@ private Q_SLOTS:
   void updateContactLineProperties();
   void pushBackCoMAxes(const Ogre::Vector3 &axes_position,
                        const Ogre::Quaternion &axes_orientation);
+  void pushBackContactAxes(const Ogre::Vector3 &axes_position,
+                           const Ogre::Quaternion &axes_orientation);
 
 private:
   /** @brief Process the trajectories */
@@ -101,6 +103,7 @@ private:
   std::vector<boost::shared_ptr<Ogre::ManualObject>> contact_manual_object_;
   std::vector<boost::shared_ptr<rviz::BillboardLine>> contact_billboard_line_;
   std::vector<std::vector<boost::shared_ptr<PointVisual>>> contact_points_;
+  std::vector<boost::shared_ptr<rviz::Axes>> contact_axes_;
 
   /** @brief Property objects for user-editable properties */
   rviz::BoolProperty *com_enable_property_;
@@ -115,13 +118,16 @@ private:
   rviz::ColorProperty *contact_color_property_;
   rviz::FloatProperty *contact_alpha_property_;
   rviz::FloatProperty *contact_line_width_property_;
+  rviz::FloatProperty *contact_scale_property_;
 
   Ogre::Vector3 last_point_position_;
 
   enum LineStyle { BILLBOARDS, LINES, POINTS };
 
   bool com_enable_;     //!< Flag that indicates if the CoM visualization is enable
-  bool contact_enable_; //!< Flag that indicates if the CoM visualization is enable
+  bool com_axes_enable_;     //!< Flag that indicates if the CoM axes visualization is enable
+  bool contact_enable_; //!< Flag that indicates if the contact visualization is enable
+  bool contact_axes_enable_; //!< Flag that indicates if the contact axes visualization is enable
 };
 
 } // namespace state_rviz_plugin

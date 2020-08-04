@@ -31,7 +31,7 @@ using namespace rviz;
 namespace state_rviz_plugin {
 
 WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
-    : is_info_(false), com_enable_(true), contact_enable_(true) {
+    : is_info_(false), com_enable_(true), com_axes_enable_(true), contact_enable_(true), contact_axes_enable_(true) {
   // Category Groups
   com_category_ = new rviz::Property("Center of Mass", QVariant(), "", this);
   contact_category_ = new rviz::Property("End-Effector", QVariant(), "", this);
@@ -86,6 +86,9 @@ WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
   contact_line_width_property_->show();
   contact_color_property_ = new ColorProperty(
       "Line Color", QColor(255, 0, 127), "Color to draw the trajectory.",
+      contact_category_, SLOT(updateContactLineProperties()), this);
+  contact_scale_property_ = new FloatProperty(
+      "Axes Scale", 1.0, "The scale of the axes that describe the orientation.",
       contact_category_, SLOT(updateContactLineProperties()), this);
   contact_alpha_property_ = new FloatProperty(
       "Alpha", 1.0, "Amount of transparency to apply to the trajectory.",
@@ -166,48 +169,57 @@ void WholeBodyTrajectoryDisplay::updateCoMLineProperties() {
   LineStyle style = (LineStyle)com_style_property_->getOptionInt();
   float line_width = com_line_width_property_->getFloat();
   float scale = com_scale_property_->getFloat();
+  com_axes_enable_ = true;
+  if (scale == 0) {
+    com_axes_enable_ = false;
+    com_axes_.clear();
+  }
   Ogre::ColourValue color = com_color_property_->getOgreColor();
   color.a = com_alpha_property_->getFloat();
   if (style == BILLBOARDS) {
     com_billboard_line_->setLineWidth(line_width);
     com_billboard_line_->setColor(color.r, color.g, color.b, color.a);
-    uint32_t num_axes = com_axes_.size();
-    for (uint32_t i = 0; i < num_axes; i++) {
-      Ogre::ColourValue x_color = com_axes_[i]->getDefaultXColor();
-      Ogre::ColourValue y_color = com_axes_[i]->getDefaultYColor();
-      Ogre::ColourValue z_color = com_axes_[i]->getDefaultZColor();
-      x_color.a = com_alpha_property_->getFloat();
-      y_color.a = com_alpha_property_->getFloat();
-      z_color.a = com_alpha_property_->getFloat();
-      com_axes_[i]->setXColor(x_color);
-      com_axes_[i]->setYColor(y_color);
-      com_axes_[i]->setZColor(z_color);
-      com_axes_[i]->getSceneNode()->setVisible(true);
-      com_axes_[i]->setScale(Ogre::Vector3(scale, scale, scale));
+    if (com_axes_enable_) {
+      std::size_t num_axes = com_axes_.size();
+      for (std::size_t i = 0; i < num_axes; ++i) {
+        Ogre::ColourValue x_color = com_axes_[i]->getDefaultXColor();
+        Ogre::ColourValue y_color = com_axes_[i]->getDefaultYColor();
+        Ogre::ColourValue z_color = com_axes_[i]->getDefaultZColor();
+        x_color.a = com_alpha_property_->getFloat();
+        y_color.a = com_alpha_property_->getFloat();
+        z_color.a = com_alpha_property_->getFloat();
+        com_axes_[i]->setXColor(x_color);
+        com_axes_[i]->setYColor(y_color);
+        com_axes_[i]->setZColor(z_color);
+        com_axes_[i]->getSceneNode()->setVisible(true);
+        com_axes_[i]->setScale(Ogre::Vector3(scale, scale, scale));
+      }
     }
   } else if (style == LINES) {
     // we have to process again the base trajectory
     if (is_info_)
       processCoMTrajectory();
   } else {
-    uint32_t n_points = com_points_.size();
-    for (uint32_t i = 0; i < n_points; ++i) {
+    std::size_t n_points = com_points_.size();
+    for (std::size_t i = 0; i < n_points; ++i) {
       com_points_[i]->setColor(color.r, color.g, color.b, color.a);
       com_points_[i]->setRadius(line_width);
     }
-    uint32_t num_axes = com_axes_.size();
-    for (uint32_t i = 0; i < num_axes; i++) {
-      Ogre::ColourValue x_color = com_axes_[i]->getDefaultXColor();
-      Ogre::ColourValue y_color = com_axes_[i]->getDefaultYColor();
-      Ogre::ColourValue z_color = com_axes_[i]->getDefaultZColor();
-      x_color.a = com_alpha_property_->getFloat();
-      y_color.a = com_alpha_property_->getFloat();
-      z_color.a = com_alpha_property_->getFloat();
-      com_axes_[i]->setXColor(x_color);
-      com_axes_[i]->setYColor(y_color);
-      com_axes_[i]->setZColor(z_color);
-      com_axes_[i]->getSceneNode()->setVisible(true);
-      com_axes_[i]->setScale(Ogre::Vector3(scale, scale, scale));
+    if (com_axes_enable_) {
+      std::size_t num_axes = com_axes_.size();
+      for (std::size_t i = 0; i < num_axes; ++i) {
+        Ogre::ColourValue x_color = com_axes_[i]->getDefaultXColor();
+        Ogre::ColourValue y_color = com_axes_[i]->getDefaultYColor();
+        Ogre::ColourValue z_color = com_axes_[i]->getDefaultZColor();
+        x_color.a = com_alpha_property_->getFloat();
+        y_color.a = com_alpha_property_->getFloat();
+        z_color.a = com_alpha_property_->getFloat();
+        com_axes_[i]->setXColor(x_color);
+        com_axes_[i]->setYColor(y_color);
+        com_axes_[i]->setZColor(z_color);
+        com_axes_[i]->getSceneNode()->setVisible(true);
+        com_axes_[i]->setScale(Ogre::Vector3(scale, scale, scale));
+      }
     }
   }
   context_->queueRender();
@@ -258,12 +270,34 @@ void WholeBodyTrajectoryDisplay::updateContactLineProperties() {
   LineStyle style = (LineStyle)contact_style_property_->getOptionInt();
   float line_width = contact_line_width_property_->getFloat();
   Ogre::ColourValue color = contact_color_property_->getOgreColor();
+  float scale = contact_scale_property_->getFloat();
+  contact_axes_enable_ = true;
+  if (scale == 0) {
+    contact_axes_enable_ = false;
+    contact_axes_.clear();
+  }
   color.a = contact_alpha_property_->getFloat();
   if (style == BILLBOARDS) {
     std::size_t n_contacts = contact_billboard_line_.size();
     for (std::size_t i = 0; i < n_contacts; ++i) {
       contact_billboard_line_[i]->setLineWidth(line_width);
       contact_billboard_line_[i]->setColor(color.r, color.g, color.b, color.a);
+    }
+    if (contact_axes_enable_) {
+      std::size_t num_axes = contact_axes_.size();
+      for (std::size_t i = 0; i < num_axes; ++i) {
+        Ogre::ColourValue x_color = contact_axes_[i]->getDefaultXColor();
+        Ogre::ColourValue y_color = contact_axes_[i]->getDefaultYColor();
+        Ogre::ColourValue z_color = contact_axes_[i]->getDefaultZColor();
+        x_color.a = contact_alpha_property_->getFloat();
+        y_color.a = contact_alpha_property_->getFloat();
+        z_color.a = contact_alpha_property_->getFloat();
+        contact_axes_[i]->setXColor(x_color);
+        contact_axes_[i]->setYColor(y_color);
+        contact_axes_[i]->setZColor(z_color);
+        contact_axes_[i]->getSceneNode()->setVisible(true);
+        contact_axes_[i]->setScale(Ogre::Vector3(scale, scale, scale));
+      }
     }
   } else if (style == LINES) {
     // we have to process again the contact trajectory
@@ -276,6 +310,22 @@ void WholeBodyTrajectoryDisplay::updateContactLineProperties() {
       for (std::size_t j = 0; j < n_contacts; ++j) {
         contact_points_[i][j]->setColor(color.r, color.g, color.b, color.a);
         contact_points_[i][j]->setRadius(line_width);
+      }
+    }
+    if (contact_axes_enable_) {
+      std::size_t num_axes = contact_axes_.size();
+      for (std::size_t i = 0; i < num_axes; ++i) {
+        Ogre::ColourValue x_color = contact_axes_[i]->getDefaultXColor();
+        Ogre::ColourValue y_color = contact_axes_[i]->getDefaultYColor();
+        Ogre::ColourValue z_color = contact_axes_[i]->getDefaultZColor();
+        x_color.a = contact_alpha_property_->getFloat();
+        y_color.a = contact_alpha_property_->getFloat();
+        z_color.a = contact_alpha_property_->getFloat();
+        contact_axes_[i]->setXColor(x_color);
+        contact_axes_[i]->setYColor(y_color);
+        contact_axes_[i]->setZColor(z_color);
+        contact_axes_[i]->getSceneNode()->setVisible(true);
+        contact_axes_[i]->setScale(Ogre::Vector3(scale, scale, scale));
       }
     }
   }
@@ -353,7 +403,9 @@ void WholeBodyTrajectoryDisplay::processCoMTrajectory() {
       }
 
       Ogre::Vector3 point_position = transform * com_position;
-      pushBackCoMAxes(point_position, base_orientation * orientation);
+      if (com_axes_enable_) {
+        pushBackCoMAxes(point_position, base_orientation * orientation);
+      }
       switch (base_style) {
       case BILLBOARDS: {
         // Getting the base line width
@@ -448,6 +500,7 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
 
     // Visualizing the different end-effector trajectories
     contact_traj_id.clear();
+    contact_axes_.clear();
     std::map<std::size_t, std::size_t> contact_vec_id;
     float contact_line_width = contact_line_width_property_->getFloat();
     switch (contact_style) {
@@ -517,10 +570,14 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
         if (id < n_contacts) {
           const state_msgs::ContactState &contact = state.contacts[id];
           Ogre::Vector3 contact_position;
-          Ogre::Quaternion base_orientation;
+          Ogre::Quaternion contact_orientation;
           contact_position.x = contact.pose.position.x;
           contact_position.y = contact.pose.position.y;
           contact_position.z = contact.pose.position.z;
+          contact_orientation.x = contact.pose.orientation.x;
+          contact_orientation.y = contact.pose.orientation.y;
+          contact_orientation.z = contact.pose.orientation.z;
+          contact_orientation.w = contact.pose.orientation.w;
           // sanity check orientation
           if (!(std::isfinite(contact_position.x) && std::isfinite(contact_position.y) &&
                 std::isfinite(contact_position.z))) {
@@ -530,7 +587,21 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
             contact_position.y = 0.0;
             contact_position.z = 0.0;
           }
+          if (!(std::isfinite(contact_orientation.x) &&
+                std::isfinite(contact_orientation.y) &&
+                std::isfinite(contact_orientation.z) &&
+                std::isfinite(contact_orientation.w))) {
+            std::cerr << "Contact orientation is not finite, resetting to [0 0 0 1]"
+                      << std::endl;
+            contact_orientation.x = 0.;
+            contact_orientation.y = 0.;
+            contact_orientation.z = 0.;
+            contact_orientation.w = 1.;
+          }
           Ogre::Vector3 point_position = transform * contact_position;
+          if (contact_axes_enable_) {
+            pushBackContactAxes(point_position, contact_orientation * orientation);
+          }
           switch (contact_style) {
             case BILLBOARDS: {
               contact_billboard_line_[traj_id]->addPoint(point_position, contact_color);
@@ -573,6 +644,7 @@ void WholeBodyTrajectoryDisplay::destroyObjects() {
     contact_points_[i].clear();
   }
   contact_points_.clear();
+  contact_axes_.clear();
 }
 
 void WholeBodyTrajectoryDisplay::pushBackCoMAxes(
@@ -600,6 +672,35 @@ void WholeBodyTrajectoryDisplay::pushBackCoMAxes(
     axes->getSceneNode()->setVisible(true);
     axes->setScale(Ogre::Vector3(scale, scale, scale));
     com_axes_.push_back(axes);
+    last_point_position_ = axes_position;
+  }
+}
+
+void WholeBodyTrajectoryDisplay::pushBackContactAxes(
+    const Ogre::Vector3 &axes_position,
+    const Ogre::Quaternion &axes_orientation) {
+  // We are keeping a vector of contact frame pointers. This creates the next
+  // one and stores it in the vector
+  float scale = contact_scale_property_->getFloat();
+  // Adding the frame with a distant from the last one
+  float sq_distant = axes_position.squaredDistance(last_point_position_);
+  if (sq_distant >= scale * scale * 0.0032) {
+    boost::shared_ptr<rviz::Axes> axes;
+    axes.reset(new Axes(scene_manager_, scene_node_, 0.04, 0.008));
+    axes->setPosition(axes_position);
+    axes->setOrientation(axes_orientation);
+    Ogre::ColourValue x_color = axes->getDefaultXColor();
+    Ogre::ColourValue y_color = axes->getDefaultYColor();
+    Ogre::ColourValue z_color = axes->getDefaultZColor();
+    x_color.a = com_alpha_property_->getFloat();
+    y_color.a = com_alpha_property_->getFloat();
+    z_color.a = com_alpha_property_->getFloat();
+    axes->setXColor(x_color);
+    axes->setYColor(y_color);
+    axes->setZColor(z_color);
+    axes->getSceneNode()->setVisible(true);
+    axes->setScale(Ogre::Vector3(scale, scale, scale));
+    contact_axes_.push_back(axes);
     last_point_position_ = axes_position;
   }
 }
