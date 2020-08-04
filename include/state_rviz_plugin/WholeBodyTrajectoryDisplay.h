@@ -9,15 +9,15 @@
 #ifndef STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
 #define STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
 
-#include <pinocchio/parsers/urdf.hpp>
 #include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/parsers/urdf.hpp>
 
 #include <rviz/message_filter_display.h>
 #include <rviz/robot/robot.h>
 #include <state_msgs/WholeBodyTrajectory.h>
-#include <state_rviz_plugin/PointVisual.h>
 #include <state_rviz_plugin/ArrowVisual.h>
 #include <state_rviz_plugin/PinocchioLinkUpdater.h>
+#include <state_rviz_plugin/PointVisual.h>
 
 namespace Ogre {
 class ManualObject;
@@ -129,10 +129,10 @@ private:
 
   /** @brief Property objects for user-editable properties */
   rviz::BoolProperty *target_enable_property_;
-  rviz::StringProperty* robot_description_property_;
-  rviz::Property* robot_visual_enabled_property_;
-  rviz::Property* robot_collision_enabled_property_;
-  rviz::FloatProperty* robot_alpha_property_;
+  rviz::StringProperty *robot_description_property_;
+  rviz::Property *robot_visual_enabled_property_;
+  rviz::Property *robot_collision_enabled_property_;
+  rviz::FloatProperty *robot_alpha_property_;
   std::vector<boost::shared_ptr<ArrowVisual>> force_visual_;
   rviz::BoolProperty *force_enable_property_;
   rviz::ColorProperty *force_color_property_;
@@ -164,11 +164,15 @@ private:
   pinocchio::Model model_;
   pinocchio::Data data_;
   double weight_;
-  bool target_enable_;     //!< Flag that indicates if the target visualization is enable
-  bool com_enable_;     //!< Flag that indicates if the CoM visualization is enable
-  bool com_axes_enable_;     //!< Flag that indicates if the CoM axes visualization is enable
-  bool contact_enable_; //!< Flag that indicates if the contact visualization is enable
-  bool contact_axes_enable_; //!< Flag that indicates if the contact axes visualization is enable
+  bool target_enable_; //!< Flag that indicates if the target visualization is
+                       //!< enable
+  bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
+  bool com_axes_enable_; //!< Flag that indicates if the CoM axes visualization
+                         //!< is enable
+  bool contact_enable_; //!< Flag that indicates if the contact visualization is
+                        //!< enable
+  bool contact_axes_enable_; //!< Flag that indicates if the contact axes
+                             //!< visualization is enable
 };
 
 } // namespace state_rviz_plugin

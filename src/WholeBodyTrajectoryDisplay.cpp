@@ -8,12 +8,12 @@
 
 #include "state_rviz_plugin/WholeBodyTrajectoryDisplay.h"
 #include <Eigen/Dense>
-#include <QTimer>
 #include <OgreBillboardSet.h>
 #include <OgreManualObject.h>
 #include <OgreMatrix4.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
+#include <QTimer>
 #include <boost/bind.hpp>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
@@ -32,14 +32,17 @@ using namespace rviz;
 namespace state_rviz_plugin {
 
 void linkUpdaterStatusFunction(rviz::StatusLevel level,
-                               const std::string& link_name,
-                               const std::string& text,
-                               WholeBodyTrajectoryDisplay* display) {
-  display->setStatus(level, QString::fromStdString(link_name), QString::fromStdString(text));
+                               const std::string &link_name,
+                               const std::string &text,
+                               WholeBodyTrajectoryDisplay *display) {
+  display->setStatus(level, QString::fromStdString(link_name),
+                     QString::fromStdString(text));
 }
 
 WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
-    : is_info_(false), weight_(0.), target_enable_(true), com_enable_(true), com_axes_enable_(true), contact_enable_(true), contact_axes_enable_(true) {
+    : is_info_(false), weight_(0.), target_enable_(true), com_enable_(true),
+      com_axes_enable_(true), contact_enable_(true),
+      contact_axes_enable_(true) {
   // Category Groups
   target_category_ = new rviz::Property("Target", QVariant(), "", this);
   com_category_ = new rviz::Property("Center of Mass", QVariant(), "", this);
@@ -49,25 +52,27 @@ WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
   target_enable_property_ =
       new BoolProperty("Enable", true, "Enable/disable the Target display",
                        target_category_, SLOT(updateTargetEnable()), this);
-  robot_description_property_ =
-      new StringProperty("Robot Description", "robot_description",
-                         "Name of the parameter to search for to load the robot description.",
-                         target_category_, SLOT(updateRobotDescription()), this);
+  robot_description_property_ = new StringProperty(
+      "Robot Description", "robot_description",
+      "Name of the parameter to search for to load the robot description.",
+      target_category_, SLOT(updateRobotDescription()), this);
   robot_visual_enabled_property_ =
-      new Property("Robot Visual", true, "Whether to display the visual representation of the robot.",
+      new Property("Robot Visual", true,
+                   "Whether to display the visual representation of the robot.",
                    target_category_, SLOT(updateRobotVisualVisible()), this);
-  robot_collision_enabled_property_ =
-      new Property("Robot Collision", false,
-                   "Whether to display the collision representation of the robot.", target_category_,
-                   SLOT(updateRobotCollisionVisible()), this);
-  robot_alpha_property_ = new FloatProperty("Robot Alpha", 0.2, "Amount of transparency to apply to the links.",
-                          target_category_,  SLOT(updateRobotAlpha()), this);
+  robot_collision_enabled_property_ = new Property(
+      "Robot Collision", false,
+      "Whether to display the collision representation of the robot.",
+      target_category_, SLOT(updateRobotCollisionVisible()), this);
+  robot_alpha_property_ = new FloatProperty(
+      "Robot Alpha", 0.2, "Amount of transparency to apply to the links.",
+      target_category_, SLOT(updateRobotAlpha()), this);
   robot_alpha_property_->setMin(0.0);
   robot_alpha_property_->setMax(1.0);
 
-  force_color_property_ =
-      new ColorProperty("Force Color", QColor(85, 0, 255), "Color to draw the arrow.",
-                        target_category_, SLOT(updateForceColorAndAlpha()), this);
+  force_color_property_ = new ColorProperty(
+      "Force Color", QColor(85, 0, 255), "Color to draw the arrow.",
+      target_category_, SLOT(updateForceColorAndAlpha()), this);
   force_alpha_property_ = new FloatProperty(
       "Force Alpha", 0.2, "Amount of transparency to apply to the arrow.",
       target_category_, SLOT(updateForceColorAndAlpha()), this);
@@ -85,7 +90,6 @@ WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
   force_head_radius_property_ = new FloatProperty(
       "Force Head Radius", 0.04, "Radius of the arrow's head, in meters.",
       target_category_, SLOT(updateForceArrowGeometry()), this);
-
 
   // Base trajectory properties
   com_enable_property_ =
@@ -155,7 +159,8 @@ WholeBodyTrajectoryDisplay::~WholeBodyTrajectoryDisplay() {
 
 void WholeBodyTrajectoryDisplay::onInitialize() {
   MFDClass::onInitialize();
-  robot_.reset(new rviz::Robot(scene_node_, context_, "Robot: " + getName().toStdString(), this));
+  robot_.reset(new rviz::Robot(scene_node_, context_,
+                               "Robot: " + getName().toStdString(), this));
   updateRobotVisualVisible();
   updateRobotCollisionVisible();
   updateRobotAlpha();
@@ -217,7 +222,8 @@ void WholeBodyTrajectoryDisplay::updateRobotVisualVisible() {
 }
 
 void WholeBodyTrajectoryDisplay::updateRobotCollisionVisible() {
-  robot_->setCollisionVisible(robot_collision_enabled_property_->getValue().toBool());
+  robot_->setCollisionVisible(
+      robot_collision_enabled_property_->getValue().toBool());
   context_->queueRender();
 }
 
@@ -242,7 +248,7 @@ void WholeBodyTrajectoryDisplay::updateForceArrowGeometry() {
   const float &head_radius = force_head_radius_property_->getFloat();
   for (size_t i = 0; i < force_visual_.size(); ++i) {
     force_visual_[i]->setProperties(shaft_length, shaft_radius, head_length,
-                                  head_radius);
+                                    head_radius);
   }
   context_->queueRender();
 }
@@ -489,22 +495,25 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
     q(6) = state.centroidal.base_orientation.w;
     std::size_t n_joints = state.joints.size();
     for (std::size_t j = 0; j < n_joints; ++j) {
-      pinocchio::JointIndex jointId = model_.getJointId(state.joints[j].name) - 2;
+      pinocchio::JointIndex jointId =
+          model_.getJointId(state.joints[j].name) - 2;
       q(jointId + 7) = state.joints[j].position;
     }
     pinocchio::centerOfMass(model_, data_, q);
     q(0) = state.centroidal.com_position.x + data_.com[0](0);
     q(1) = state.centroidal.com_position.y + data_.com[0](1);
     q(2) = state.centroidal.com_position.z + data_.com[0](2);
-    robot_->update(PinocchioLinkUpdater(model_, data_, q,
-                                 boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
+    robot_->update(PinocchioLinkUpdater(
+        model_, data_, q,
+        boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
 
     size_t n_contacts = state.contacts.size();
     force_visual_.clear();
     for (size_t i = 0; i < n_contacts; ++i) {
       const state_msgs::ContactState &contact = state.contacts[i];
       // Getting the contact position
-      Ogre::Vector3 contact_pos(contact.pose.position.x, contact.pose.position.y,
+      Ogre::Vector3 contact_pos(contact.pose.position.x,
+                                contact.pose.position.y,
                                 contact.pose.position.z);
       // Getting the force direction
       Eigen::Vector3d for_ref_dir = -Eigen::Vector3d::UnitZ();
@@ -514,8 +523,8 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
           std::isfinite(contact_pos.y) && std::isfinite(contact_pos.z)) {
         Eigen::Quaterniond for_q;
         for_q.setFromTwoVectors(for_ref_dir, for_dir);
-        Ogre::Quaternion contact_for_orientation(for_q.w(), for_q.x(), for_q.y(),
-                                                 for_q.z());
+        Ogre::Quaternion contact_for_orientation(for_q.w(), for_q.x(),
+                                                 for_q.y(), for_q.z());
         // We are keeping a vector of visual pointers. This creates the next
         // one and stores it in the vector
         boost::shared_ptr<ArrowVisual> arrow;
@@ -674,12 +683,12 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
     // Visualization of the end-effector trajectory
     // Getting the end-effector trajectory style
     uint32_t n_points = msg_->trajectory.size();
-    LineStyle contact_style = (LineStyle)contact_style_property_->getOptionInt();
+    LineStyle contact_style =
+        (LineStyle)contact_style_property_->getOptionInt();
 
     // Getting the end-effector trajectory color
-    Ogre::ColourValue contact_color =
-    contact_color_property_->getOgreColor(); contact_color.a =
-    contact_alpha_property_->getFloat();
+    Ogre::ColourValue contact_color = contact_color_property_->getOgreColor();
+    contact_color.a = contact_alpha_property_->getFloat();
 
     // Getting the number of contact trajectories
     std::size_t n_traj = 0;
@@ -689,7 +698,8 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
       std::size_t n_contacts = state.contacts.size();
       for (std::size_t k = 0; k < n_contacts; ++k) {
         state_msgs::ContactState contact = msg_->trajectory[i].contacts[k];
-        if (contact_traj_id.find(contact.name) == contact_traj_id.end()) { // a new swing trajectory
+        if (contact_traj_id.find(contact.name) ==
+            contact_traj_id.end()) { // a new swing trajectory
           contact_traj_id[contact.name] = n_traj;
           // Incrementing the counter (id) of swing trajectories
           ++n_traj;
@@ -703,20 +713,20 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
     std::map<std::size_t, std::size_t> contact_vec_id;
     float contact_line_width = contact_line_width_property_->getFloat();
     switch (contact_style) {
-      case BILLBOARDS: {
-        // Getting the end-effector line width
-        contact_billboard_line_.clear();
-        contact_billboard_line_.resize(n_traj);
-      } break;
-      case LINES: {
-        contact_manual_object_.clear();
-        contact_manual_object_.resize(n_traj);
-      } break;
-      case POINTS: {
-        // Getting the end-effector line width
-        contact_points_.clear();
-        contact_points_.resize(n_points);
-      } break;
+    case BILLBOARDS: {
+      // Getting the end-effector line width
+      contact_billboard_line_.clear();
+      contact_billboard_line_.resize(n_traj);
+    } break;
+    case LINES: {
+      contact_manual_object_.clear();
+      contact_manual_object_.resize(n_traj);
+    } break;
+    case POINTS: {
+      // Getting the end-effector line width
+      contact_points_.clear();
+      contact_points_.resize(n_points);
+    } break;
     }
 
     std::size_t traj_id = 0;
@@ -725,32 +735,37 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
       std::size_t n_contacts = state.contacts.size();
       for (std::size_t k = 0; k < n_contacts; ++k) {
         const state_msgs::ContactState &contact = state.contacts[k];
-        if (contact_traj_id.find(contact.name) == contact_traj_id.end()) { // a new swing trajectory
+        if (contact_traj_id.find(contact.name) ==
+            contact_traj_id.end()) { // a new swing trajectory
           contact_traj_id[contact.name] = traj_id;
           contact_vec_id[traj_id] = k;
           switch (contact_style) {
-            case BILLBOARDS: {
-              contact_billboard_line_[traj_id].reset(new rviz::BillboardLine(scene_manager_, scene_node_));
-              contact_billboard_line_[traj_id]->setNumLines(1);
-              contact_billboard_line_[traj_id]->setMaxPointsPerLine(n_points);
-              contact_billboard_line_[traj_id]->setLineWidth(contact_line_width);
-            } break;
-            case LINES: {
-              contact_manual_object_[traj_id].reset(scene_manager_->createManualObject());
-              contact_manual_object_[traj_id]->setDynamic(true);
-              scene_node_->attachObject(contact_manual_object_[traj_id].get());
-              contact_manual_object_[traj_id]->estimateVertexCount(n_points);
-              contact_manual_object_[traj_id]->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
-            } break;
-            case POINTS: {
-              // do nothing
-            } break;
+          case BILLBOARDS: {
+            contact_billboard_line_[traj_id].reset(
+                new rviz::BillboardLine(scene_manager_, scene_node_));
+            contact_billboard_line_[traj_id]->setNumLines(1);
+            contact_billboard_line_[traj_id]->setMaxPointsPerLine(n_points);
+            contact_billboard_line_[traj_id]->setLineWidth(contact_line_width);
+          } break;
+          case LINES: {
+            contact_manual_object_[traj_id].reset(
+                scene_manager_->createManualObject());
+            contact_manual_object_[traj_id]->setDynamic(true);
+            scene_node_->attachObject(contact_manual_object_[traj_id].get());
+            contact_manual_object_[traj_id]->estimateVertexCount(n_points);
+            contact_manual_object_[traj_id]->begin(
+                "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+          } break;
+          case POINTS: {
+            // do nothing
+          } break;
           }
           // Incrementing the counter (id) of swing trajectories
           ++traj_id;
         } else {
           std::size_t swing_idx = contact_traj_id.find(contact.name)->second;
-          if (k != contact_vec_id.find(swing_idx)->second) { // change the vector index
+          if (k != contact_vec_id.find(swing_idx)
+                       ->second) { // change the vector index
             contact_vec_id[swing_idx] = k;
           }
         }
@@ -762,7 +777,8 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
         contact_points_[i].clear();
         contact_points_[i].resize(n_contacts);
       }
-      for (std::map<std::string, std::size_t>::iterator traj_it = contact_traj_id.begin();
+      for (std::map<std::string, std::size_t>::iterator traj_it =
+               contact_traj_id.begin();
            traj_it != contact_traj_id.end(); ++traj_it) {
         std::size_t traj_id = traj_it->second;
         std::size_t id = contact_vec_id.find(traj_id)->second;
@@ -778,7 +794,8 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
           contact_orientation.z = contact.pose.orientation.z;
           contact_orientation.w = contact.pose.orientation.w;
           // sanity check orientation
-          if (!(std::isfinite(contact_position.x) && std::isfinite(contact_position.y) &&
+          if (!(std::isfinite(contact_position.x) &&
+                std::isfinite(contact_position.y) &&
                 std::isfinite(contact_position.z))) {
             std::cerr << "Contact trajectory is not finite, resetting to zero!"
                       << std::endl;
@@ -790,8 +807,9 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
                 std::isfinite(contact_orientation.y) &&
                 std::isfinite(contact_orientation.z) &&
                 std::isfinite(contact_orientation.w))) {
-            std::cerr << "Contact orientation is not finite, resetting to [0 0 0 1]"
-                      << std::endl;
+            std::cerr
+                << "Contact orientation is not finite, resetting to [0 0 0 1]"
+                << std::endl;
             contact_orientation.x = 0.;
             contact_orientation.y = 0.;
             contact_orientation.z = 0.;
@@ -799,25 +817,31 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
           }
           Ogre::Vector3 point_position = transform * contact_position;
           if (contact_axes_enable_) {
-            pushBackContactAxes(point_position, contact_orientation * orientation);
+            pushBackContactAxes(point_position,
+                                contact_orientation * orientation);
           }
           switch (contact_style) {
-            case BILLBOARDS: {
-              contact_billboard_line_[traj_id]->addPoint(point_position, contact_color);
-            } break;
-            case LINES: {
-              contact_manual_object_[traj_id]->position(point_position.x, point_position.y, point_position.z);
-              contact_manual_object_[traj_id]->colour(contact_color);
-            } break;
-            case POINTS: {
-              contact_points_[i][contact_idx].reset(new PointVisual(context_->getSceneManager(), scene_node_));
-              contact_points_[i][contact_idx]->setColor(contact_color.r, contact_color.g, contact_color.b, contact_color.a);
-              contact_points_[i][contact_idx]->setRadius(contact_line_width);
-              contact_points_[i][contact_idx]->setPoint(point_position);
-              contact_points_[i][contact_idx]->setFramePosition(position);
-              contact_points_[i][contact_idx]->setFrameOrientation(orientation);
-              ++contact_idx;
-            } break;
+          case BILLBOARDS: {
+            contact_billboard_line_[traj_id]->addPoint(point_position,
+                                                       contact_color);
+          } break;
+          case LINES: {
+            contact_manual_object_[traj_id]->position(
+                point_position.x, point_position.y, point_position.z);
+            contact_manual_object_[traj_id]->colour(contact_color);
+          } break;
+          case POINTS: {
+            contact_points_[i][contact_idx].reset(
+                new PointVisual(context_->getSceneManager(), scene_node_));
+            contact_points_[i][contact_idx]->setColor(
+                contact_color.r, contact_color.g, contact_color.b,
+                contact_color.a);
+            contact_points_[i][contact_idx]->setRadius(contact_line_width);
+            contact_points_[i][contact_idx]->setPoint(point_position);
+            contact_points_[i][contact_idx]->setFramePosition(position);
+            contact_points_[i][contact_idx]->setFrameOrientation(orientation);
+            ++contact_idx;
+          } break;
           }
         }
       }
@@ -836,9 +860,11 @@ void WholeBodyTrajectoryDisplay::loadRobotModel() {
   clearStatuses();
   context_->queueRender();
   std::string content;
-  if (!update_nh_.getParam(robot_description_property_->getStdString(), content)) {
+  if (!update_nh_.getParam(robot_description_property_->getStdString(),
+                           content)) {
     std::string loc;
-    if (update_nh_.searchParam(robot_description_property_->getStdString(), loc)) {
+    if (update_nh_.searchParam(robot_description_property_->getStdString(),
+                               loc)) {
       update_nh_.getParam(loc, content);
     } else {
       clearRobotModel();
@@ -874,8 +900,7 @@ void WholeBodyTrajectoryDisplay::loadRobotModel() {
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
 }
 
-void WholeBodyTrajectoryDisplay::clearRobotModel()
-{
+void WholeBodyTrajectoryDisplay::clearRobotModel() {
   robot_->clear();
   clearStatuses();
   robot_description_.clear();

@@ -11,33 +11,32 @@
 
 #include <tf/tf.h>
 
-#include <OgreVector3.h>
 #include <OgreQuaternion.h>
+#include <OgreVector3.h>
 #include <pinocchio/algorithm/frames.hpp>
 
-namespace state_rviz_plugin
-{
+namespace state_rviz_plugin {
 
-PinocchioLinkUpdater::PinocchioLinkUpdater(pinocchio::Model& model,
-                             pinocchio::Data& data,
-                             const Eigen::Ref<const Eigen::VectorXd>& q,
-                             const StatusCallback& status_cb,
-                             const std::string& tf_prefix)
-  : model_(model), data_(data), status_callback_(status_cb), tf_prefix_(tf_prefix) {
+PinocchioLinkUpdater::PinocchioLinkUpdater(
+    pinocchio::Model &model, pinocchio::Data &data,
+    const Eigen::Ref<const Eigen::VectorXd> &q, const StatusCallback &status_cb,
+    const std::string &tf_prefix)
+    : model_(model), data_(data), status_callback_(status_cb),
+      tf_prefix_(tf_prefix) {
   pinocchio::framesForwardKinematics(model_, data_, q);
 }
 
-bool PinocchioLinkUpdater::getLinkTransforms(const std::string& link_name,
-                                      Ogre::Vector3& visual_position,
-                                      Ogre::Quaternion& visual_orientation,
-                                      Ogre::Vector3& collision_position,
-                                      Ogre::Quaternion& collision_orientation) const {
+bool PinocchioLinkUpdater::getLinkTransforms(
+    const std::string &link_name, Ogre::Vector3 &visual_position,
+    Ogre::Quaternion &visual_orientation, Ogre::Vector3 &collision_position,
+    Ogre::Quaternion &collision_orientation) const {
   if (model_.existFrame(link_name)) {
     pinocchio::FrameIndex frameId = model_.getFrameId(link_name);
-    const Eigen::Vector3d& translation = data_.oMf[frameId].translation();
+    const Eigen::Vector3d &translation = data_.oMf[frameId].translation();
     Eigen::Quaterniond quaternion(data_.oMf[frameId].rotation());
     Ogre::Vector3 position(translation[0], translation[1], translation[2]);
-    Ogre::Quaternion orientation(quaternion.w(), quaternion.x(), quaternion.y(), quaternion.z());
+    Ogre::Quaternion orientation(quaternion.w(), quaternion.x(), quaternion.y(),
+                                 quaternion.z());
 
     // Collision/visual transforms are the same in this case
     visual_position = position;
@@ -55,8 +54,8 @@ bool PinocchioLinkUpdater::getLinkTransforms(const std::string& link_name,
 }
 
 void PinocchioLinkUpdater::setLinkStatus(rviz::StatusLevel level,
-                                  const std::string& link_name,
-                                  const std::string& text) const {
+                                         const std::string &link_name,
+                                         const std::string &text) const {
   if (status_callback_) {
     status_callback_(level, link_name, text);
   }
