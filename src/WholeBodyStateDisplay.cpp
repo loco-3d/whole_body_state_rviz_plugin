@@ -7,9 +7,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "state_rviz_plugin/WholeBodyStateDisplay.h"
+#include "state_rviz_plugin/PinocchioLinkUpdater.h"
 #include <Eigen/Dense>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
+#include <QTimer>
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/parsers/urdf.hpp>
 #include <rviz/frame_manager.h>
@@ -24,19 +26,21 @@ using namespace rviz;
 
 namespace state_rviz_plugin {
 
+void linkUpdaterStatusFunction(rviz::StatusLevel level,
+                               const std::string &link_name,
+                               const std::string &text,
+                               WholeBodyStateDisplay *display) {
+  display->setStatus(level, QString::fromStdString(link_name),
+                     QString::fromStdString(text));
+}
+
 WholeBodyStateDisplay::WholeBodyStateDisplay()
     : is_info_(false), initialized_model_(false), force_threshold_(0.),
       weight_(0.), gravity_(9.81), com_real_(true), com_enable_(true),
       cop_enable_(true), icp_enable_(true), cmp_enable_(true),
       grf_enable_(true), support_enable_(true), cone_enable_(true) {
-  // Robot properties
-  robot_model_property_ =
-      new StringProperty("Robot Description", "robot_description",
-                         "Name of the parameter to search for to load"
-                         " the robot description.",
-                         this, SLOT(updateRobotModel()));
-
   // Category Groups
+  robot_category_ = new rviz::Property("Robot", QVariant(), "", this);
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
   cop_category_ =
       new rviz::Property("Center Of Pressure", QVariant(), "", this);
@@ -49,6 +53,28 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       new rviz::Property("Support Region", QVariant(), "", this);
   friction_category_ =
       new rviz::Property("Friction Cone", QVariant(), "", this);
+
+  // Robot properties
+  robot_enable_property_ =
+      new BoolProperty("Enable", true, "Enable/disable the Target display",
+                       robot_category_, SLOT(updateRobotEnable()), this);
+  robot_model_property_ = new StringProperty(
+      "Robot Description", "robot_description",
+      "Name of the parameter to search for to load the robot description.",
+      robot_category_, SLOT(updateRobotModel()), this);
+  robot_visual_enabled_property_ =
+      new Property("Robot Visual", true,
+                   "Whether to display the visual representation of the robot.",
+                   robot_category_, SLOT(updateRobotVisualVisible()), this);
+  robot_collision_enabled_property_ = new Property(
+      "Robot Collision", false,
+      "Whether to display the collision representation of the robot.",
+      robot_category_, SLOT(updateRobotCollisionVisible()), this);
+  robot_alpha_property_ = new FloatProperty(
+      "Robot Alpha", 1., "Amount of transparency to apply to the links.",
+      robot_category_, SLOT(updateRobotAlpha()), this);
+  robot_alpha_property_->setMin(0.0);
+  robot_alpha_property_->setMax(1.0);
 
   // CoM position and velocity properties
   com_enable_property_ =
@@ -202,26 +228,26 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
 
 WholeBodyStateDisplay::~WholeBodyStateDisplay() {}
 
-void WholeBodyStateDisplay::clear() {
-  clearStatuses();
-  robot_model_.clear();
-  model_ = pinocchio::Model();
-  initialized_model_ = false;
-}
-
 void WholeBodyStateDisplay::onInitialize() {
   MFDClass::onInitialize();
+  robot_.reset(new rviz::Robot(scene_node_, context_,
+                               "Robot: " + getName().toStdString(), this));
+  updateRobotVisualVisible();
+  updateRobotCollisionVisible();
+  updateRobotAlpha();
   updateGRFColorAndAlpha();
 }
 
 void WholeBodyStateDisplay::onEnable() {
   MFDClass::onEnable();
-  load();
+  loadRobotModel();
+  robot_->setVisible(true);
 }
 
 void WholeBodyStateDisplay::onDisable() {
   MFDClass::onDisable();
-  clear();
+  robot_->setVisible(false);
+  clearRobotModel();
 }
 
 void WholeBodyStateDisplay::fixedFrameChanged() {
@@ -236,22 +262,24 @@ void WholeBodyStateDisplay::reset() {
   cones_visual_.clear();
 }
 
-void WholeBodyStateDisplay::load() {
+void WholeBodyStateDisplay::loadRobotModel() {
   std::string content;
   if (!update_nh_.getParam(robot_model_property_->getStdString(), content)) {
     std::string loc;
     if (update_nh_.searchParam(robot_model_property_->getStdString(), loc)) {
       update_nh_.getParam(loc, content);
     } else {
-      clear();
+      clearRobotModel();
       setStatus(StatusProperty::Error, "URDF",
                 "Parameter [" + robot_model_property_->getString() +
                     "] does not exist, and was not found by searchParam()");
+      // try again in a second
+      QTimer::singleShot(1000, this, SLOT(updateRobotModel()));
       return;
     }
   }
   if (content.empty()) {
-    clear();
+    clearRobotModel();
     setStatus(StatusProperty::Error, "URDF", "URDF is empty");
     return;
   }
@@ -259,20 +287,62 @@ void WholeBodyStateDisplay::load() {
     return;
   }
   robot_model_ = content;
+  urdf::Model descr;
+  if (!descr.initString(robot_model_)) {
+    clearRobotModel();
+    setStatus(StatusProperty::Error, "URDF", "Failed to parse URDF model");
+    return;
+  }
+
   // Initializing the dynamics from the URDF model
   pinocchio::urdf::buildModelFromXML(robot_model_,
                                      pinocchio::JointModelFreeFlyer(), model_);
+  data_ = pinocchio::Data(model_);
   gravity_ = model_.gravity.linear().norm();
   weight_ = pinocchio::computeTotalMass(model_) * gravity_;
   initialized_model_ = true;
+  robot_->load(descr);
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
+}
+
+void WholeBodyStateDisplay::clearRobotModel() {
+  clearStatuses();
+  robot_model_.clear();
+  model_ = pinocchio::Model();
+  data_ = pinocchio::Data();
+  initialized_model_ = false;
+}
+
+void WholeBodyStateDisplay::updateRobotEnable() {
+  robot_enable_ = robot_enable_property_->getBool();
+  if (robot_enable_) {
+    robot_->setVisible(true);
+  } else {
+    robot_->setVisible(false);
+  }
 }
 
 void WholeBodyStateDisplay::updateRobotModel() {
   if (isEnabled()) {
-    load();
+    loadRobotModel();
     context_->queueRender();
   }
+}
+
+void WholeBodyStateDisplay::updateRobotVisualVisible() {
+  robot_->setVisualVisible(robot_visual_enabled_property_->getValue().toBool());
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateRobotCollisionVisible() {
+  robot_->setCollisionVisible(
+      robot_collision_enabled_property_->getValue().toBool());
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateRobotAlpha() {
+  robot_->setAlpha(robot_alpha_property_->getFloat());
+  context_->queueRender();
 }
 
 void WholeBodyStateDisplay::updateCoMEnable() {
@@ -493,6 +563,28 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
               msg_->header.frame_id.c_str(), qPrintable(fixed_frame_));
     return;
+  }
+
+  // Display the robot
+  if (robot_enable_) {
+    Eigen::VectorXd q = Eigen::VectorXd::Zero(model_.nq);
+    q(3) = msg_->centroidal.base_orientation.x;
+    q(4) = msg_->centroidal.base_orientation.y;
+    q(5) = msg_->centroidal.base_orientation.z;
+    q(6) = msg_->centroidal.base_orientation.w;
+    std::size_t n_joints = msg_->joints.size();
+    for (std::size_t j = 0; j < n_joints; ++j) {
+      pinocchio::JointIndex jointId =
+          model_.getJointId(msg_->joints[j].name) - 2;
+      q(jointId + 7) = msg_->joints[j].position;
+    }
+    pinocchio::centerOfMass(model_, data_, q);
+    q(0) = msg_->centroidal.com_position.x + data_.com[0](0);
+    q(1) = msg_->centroidal.com_position.y + data_.com[0](1);
+    q(2) = msg_->centroidal.com_position.z + data_.com[0](2);
+    robot_->update(PinocchioLinkUpdater(
+        model_, data_, q,
+        boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
   }
 
   // Resetting the point visualizers

@@ -12,6 +12,7 @@
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/model.hpp>
 
+#include <rviz/robot/robot.h>
 #include "state_rviz_plugin/ArrowVisual.h"
 #include "state_rviz_plugin/PointVisual.h"
 #include "state_rviz_plugin/PolygonVisual.h"
@@ -47,9 +48,6 @@ public:
   /** @brief Destructor function */
   ~WholeBodyStateDisplay();
 
-  /** @brief Clear the robot model */
-  void clear();
-
   /** @brief Overrides of public virtual functions from the Display class */
   void onInitialize() override;
   void onEnable() override;
@@ -58,11 +56,6 @@ public:
 
   /** @brief Clear the visuals by deleting their objects */
   void reset() override;
-
-  /** @brief Loads a URDF from the ros-param named by our
-   * "Robot Description" property, iterates through the links, and
-   * loads any necessary models. */
-  void load();
 
   /**
    * @brief Function to handle an incoming ROS message
@@ -74,7 +67,11 @@ public:
 private Q_SLOTS:
   /** @brief Helper function to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
+  void updateRobotEnable();
   void updateRobotModel();
+  void updateRobotVisualVisible();
+  void updateRobotCollisionVisible();
+  void updateRobotAlpha();
   void updateCoMEnable();
   void updateCoMStyle();
   void updateCoMColorAndAlpha();
@@ -98,6 +95,15 @@ private Q_SLOTS:
 private:
   void processWholeBodyState();
 
+  /** @brief Loads a URDF from the ros-param named by our
+   * "Robot Description" property, iterates through the links, and
+   * loads any necessary models.
+   */
+  void loadRobotModel();
+
+  /** @brief Clear the robot model */
+  void clearRobotModel();
+
   /** @brief Whole-body state message */
   state_msgs::WholeBodyState::ConstPtr msg_;
   bool is_info_;
@@ -107,6 +113,7 @@ private:
   bool initialized_model_;
 
   /** @brief Properties to show on side panel */
+  rviz::Property *robot_category_;
   rviz::Property *com_category_;
   rviz::Property *cop_category_;
   rviz::Property *cmp_category_;
@@ -116,6 +123,7 @@ private:
   rviz::Property *friction_category_;
 
   /** @brief Object for visualization of the data */
+  boost::shared_ptr<rviz::Robot> robot_;
   boost::shared_ptr<PointVisual> com_visual_;
   boost::shared_ptr<ArrowVisual> comd_visual_;
   boost::shared_ptr<PointVisual> cop_visual_;
@@ -126,7 +134,11 @@ private:
   std::vector<boost::shared_ptr<rviz::Shape>> cones_visual_;
 
   /** @brief Property objects for user-editable properties */
+  rviz::BoolProperty *robot_enable_property_;
   rviz::StringProperty *robot_model_property_;
+  rviz::Property *robot_visual_enabled_property_;
+  rviz::Property *robot_collision_enabled_property_;
+  rviz::FloatProperty *robot_alpha_property_;
   rviz::BoolProperty *com_enable_property_;
   rviz::EnumProperty *com_style_property_;
   rviz::ColorProperty *com_color_property_;
@@ -175,6 +187,7 @@ private:
 
   /** @brief Whole-body dynamics */
   pinocchio::Model model_;
+  pinocchio::Data data_;
 
   double force_threshold_; //!< Force threshold for detecting active contacts
   double weight_;          //!< Weight of the robot
@@ -183,6 +196,7 @@ private:
   enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
   bool com_real_;   //!< Label to indicates the type of CoM display (real or
                     //!< projected)
+  bool robot_enable_; //!< Flag that indicates if the robot visualization is enable
   bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
   bool cop_enable_; //!< Flag that indicates if the CoP visualization is enable
   bool icp_enable_; //!< Flag that indicates if the ICP visualization is enable
