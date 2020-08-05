@@ -256,12 +256,9 @@ void WholeBodyTrajectoryDisplay::updateForceArrowGeometry() {
 void WholeBodyTrajectoryDisplay::updateTargetEnable() {
   target_enable_ = target_enable_property_->getBool();
   if (target_enable_) {
-    loadRobotModel();
     robot_->setVisible(true);
   } else {
-    // robot_.reset();
     robot_->setVisible(false);
-    clearRobotModel();
   }
 }
 
@@ -885,17 +882,17 @@ void WholeBodyTrajectoryDisplay::loadRobotModel() {
     return;
   }
   robot_description_ = content;
-  pinocchio::urdf::buildModelFromXML(robot_description_,
-                                     pinocchio::JointModelFreeFlyer(), model_);
-  data_ = pinocchio::Data(model_);
-  double gravity = model_.gravity.linear().norm();
-  weight_ = pinocchio::computeTotalMass(model_) * gravity;
   urdf::Model descr;
   if (!descr.initString(robot_description_)) {
     clearRobotModel();
     setStatus(StatusProperty::Error, "URDF", "Failed to parse URDF model");
     return;
   }
+  pinocchio::urdf::buildModelFromXML(robot_description_,
+                                     pinocchio::JointModelFreeFlyer(), model_);
+  data_ = pinocchio::Data(model_);
+  double gravity = model_.gravity.linear().norm();
+  weight_ = pinocchio::computeTotalMass(model_) * gravity;
   robot_->load(descr);
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
 }

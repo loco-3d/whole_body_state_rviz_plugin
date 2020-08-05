@@ -126,6 +126,7 @@ private:
   std::vector<boost::shared_ptr<rviz::BillboardLine>> contact_billboard_line_;
   std::vector<std::vector<boost::shared_ptr<PointVisual>>> contact_points_;
   std::vector<boost::shared_ptr<rviz::Axes>> contact_axes_;
+  std::vector<boost::shared_ptr<ArrowVisual>> force_visual_;
 
   /** @brief Property objects for user-editable properties */
   rviz::BoolProperty *target_enable_property_;
@@ -133,7 +134,6 @@ private:
   rviz::Property *robot_visual_enabled_property_;
   rviz::Property *robot_collision_enabled_property_;
   rviz::FloatProperty *robot_alpha_property_;
-  std::vector<boost::shared_ptr<ArrowVisual>> force_visual_;
   rviz::BoolProperty *force_enable_property_;
   rviz::ColorProperty *force_color_property_;
   rviz::FloatProperty *force_alpha_property_;
