@@ -9,15 +9,19 @@
 #ifndef STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
 #define STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
 
-#include <pinocchio/algorithm/center-of-mass.hpp>
-#include <pinocchio/parsers/urdf.hpp>
-
+#include "state_rviz_plugin/ArrowVisual.h"
+#include "state_rviz_plugin/PointVisual.h"
+#include <pinocchio/multibody/data.hpp>
+#include <pinocchio/multibody/model.hpp>
 #include <rviz/message_filter_display.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
 #include <rviz/robot/robot.h>
 #include <state_msgs/WholeBodyTrajectory.h>
-#include <state_rviz_plugin/ArrowVisual.h>
-#include <state_rviz_plugin/PinocchioLinkUpdater.h>
-#include <state_rviz_plugin/PointVisual.h>
 
 namespace Ogre {
 class ManualObject;

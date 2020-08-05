@@ -7,25 +7,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "state_rviz_plugin/WholeBodyTrajectoryDisplay.h"
+#include "state_rviz_plugin/PinocchioLinkUpdater.h"
 #include <Eigen/Dense>
-#include <OgreBillboardSet.h>
 #include <OgreManualObject.h>
-#include <OgreMatrix4.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 #include <QTimer>
-#include <boost/bind.hpp>
-#include <rviz/display_context.h>
-#include <rviz/frame_manager.h>
-#include <rviz/ogre_helpers/axes.h>
-#include <rviz/ogre_helpers/billboard_line.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/enum_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/validate_floats.h>
-#include <tf/transform_listener.h>
+#include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/parsers/urdf.hpp>
 
 using namespace rviz;
 

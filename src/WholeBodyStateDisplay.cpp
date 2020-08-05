@@ -9,18 +9,9 @@
 #include "state_rviz_plugin/WholeBodyStateDisplay.h"
 #include "state_rviz_plugin/PinocchioLinkUpdater.h"
 #include <Eigen/Dense>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
 #include <QTimer>
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/parsers/urdf.hpp>
-#include <rviz/frame_manager.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/enum_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/validate_floats.h>
-#include <rviz/visualization_manager.h>
 
 using namespace rviz;
 

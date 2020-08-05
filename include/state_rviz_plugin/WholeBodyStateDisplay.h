@@ -11,13 +11,17 @@
 
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/model.hpp>
-
+#include <rviz/message_filter_display.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
 #include <rviz/robot/robot.h>
+#include <state_msgs/WholeBodyState.h>
+
 #include "state_rviz_plugin/ArrowVisual.h"
 #include "state_rviz_plugin/PointVisual.h"
 #include "state_rviz_plugin/PolygonVisual.h"
-#include <rviz/message_filter_display.h>
-#include <state_msgs/WholeBodyState.h>
 
 namespace Ogre {
 class SceneNode;
@@ -194,9 +198,10 @@ private:
   double gravity_;         //!< Gravity acceleration
   double friction_mu_;     //!< Friction coefficient
   enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
-  bool com_real_;   //!< Label to indicates the type of CoM display (real or
-                    //!< projected)
-  bool robot_enable_; //!< Flag that indicates if the robot visualization is enable
+  bool com_real_;     //!< Label to indicates the type of CoM display (real or
+                      //!< projected)
+  bool robot_enable_; //!< Flag that indicates if the robot visualization is
+                      //!< enable
   bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
   bool cop_enable_; //!< Flag that indicates if the CoP visualization is enable
   bool icp_enable_; //!< Flag that indicates if the ICP visualization is enable
