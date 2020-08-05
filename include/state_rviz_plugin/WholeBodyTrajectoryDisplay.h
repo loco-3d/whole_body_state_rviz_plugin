@@ -79,7 +79,8 @@ public:
   void processMessage(const state_msgs::WholeBodyTrajectory::ConstPtr &msg);
 
 private Q_SLOTS:
-  /** @brief Helper functions to apply color and alpha to all visuals.
+  /**@{*/
+  /** Helper functions to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
   void updateTargetEnable();
   void updateRobotDescription();
@@ -98,12 +99,15 @@ private Q_SLOTS:
                        const Ogre::Quaternion &axes_orientation);
   void pushBackContactAxes(const Ogre::Vector3 &axes_position,
                            const Ogre::Quaternion &axes_orientation);
+  /**@}*/
 
 private:
-  /** @brief Process the trajectories */
+  /**@{*/
+  /** Process the trajectories */
   void processTargetPosture();
   void processCoMTrajectory();
   void processContactTrajectory();
+  /**@}*/
 
   /** @brief Load the robot model */
   void loadRobotModel();
@@ -111,7 +115,7 @@ private:
   /** @brief Clear the robot model */
   void clearRobotModel();
 
-  /** @bried Destroy all the objects for visualization */
+  /** @brief Destroy all the objects for visualization */
   void destroyObjects();
 
   /** @brief Whole-body trajectory message */
@@ -120,12 +124,15 @@ private:
   /** @brief Indicates if it's been received a message */
   bool is_info_;
 
-  /** @brief Properties to show on side panel */
+  /**@{*/
+  /** Properties to show on side panel */
   rviz::Property *target_category_;
   rviz::Property *com_category_;
   rviz::Property *contact_category_;
+  /**@}*/
 
-  /** @brief Object for visualization of the data */
+  /**@{*/
+  /** Object for visualization of the data */
   boost::shared_ptr<rviz::Robot> robot_;
   boost::shared_ptr<Ogre::ManualObject> com_manual_object_;
   boost::shared_ptr<rviz::BillboardLine> com_billboard_line_;
@@ -136,8 +143,10 @@ private:
   std::vector<std::vector<boost::shared_ptr<PointVisual>>> contact_points_;
   std::vector<boost::shared_ptr<rviz::Axes>> contact_axes_;
   std::vector<boost::shared_ptr<ArrowVisual>> force_visual_;
+  /**@}*/
 
-  /** @brief Property objects for user-editable properties */
+  /**@{*/
+  /** Property objects for user-editable properties */
   rviz::BoolProperty *target_enable_property_;
   rviz::StringProperty *robot_description_property_;
   rviz::Property *robot_visual_enabled_property_;
@@ -162,22 +171,27 @@ private:
   rviz::FloatProperty *contact_alpha_property_;
   rviz::FloatProperty *contact_line_width_property_;
   rviz::FloatProperty *contact_scale_property_;
+  /**@}*/
 
-  /** @brief Robot variables */
+  /**@{*/
+  /** Robot variables */
   std::string robot_description_;
   pinocchio::Model model_;
   pinocchio::Data data_;
   double weight_;
+  /**@}*/
 
   Ogre::Vector3 last_point_position_;
   enum LineStyle { BILLBOARDS, LINES, POINTS };
 
-  /** @brief Flag that indicates if the category are enable */
+  /**@{*/
+  /** Flag that indicates if the category are enable */
   bool target_enable_;
   bool com_enable_;
   bool com_axes_enable_;
   bool contact_enable_;
   bool contact_axes_enable_;
+  /**@}*/
 };
 
 } // namespace state_rviz_plugin
