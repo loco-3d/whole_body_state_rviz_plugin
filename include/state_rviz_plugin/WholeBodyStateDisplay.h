@@ -18,7 +18,6 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/robot/robot.h>
 #include <state_msgs/WholeBodyState.h>
-
 #include "state_rviz_plugin/ArrowVisual.h"
 #include "state_rviz_plugin/PointVisual.h"
 #include "state_rviz_plugin/PolygonVisual.h"
@@ -52,10 +51,16 @@ public:
   /** @brief Destructor function */
   ~WholeBodyStateDisplay();
 
-  /** @brief Overrides of public virtual functions from the Display class */
+  /** @brief Initialization procedure of the plugin. */
   void onInitialize() override;
+
+  /** @brief Enable procedure of the plugin. */
   void onEnable() override;
+
+  /** @brief Disable procedure of the plugin. */
   void onDisable() override;
+
+  /** @brief Called when the fixed frame changed */
   void fixedFrameChanged() override;
 
   /** @brief Clear the visuals by deleting their objects */
@@ -112,10 +117,6 @@ private:
   state_msgs::WholeBodyState::ConstPtr msg_;
   bool is_info_;
 
-  /** @brief Robot URDF model */
-  std::string robot_model_;
-  bool initialized_model_;
-
   /** @brief Properties to show on side panel */
   rviz::Property *robot_category_;
   rviz::Property *com_category_;
@@ -152,22 +153,18 @@ private:
   rviz::FloatProperty *com_head_length_property_;
   rviz::FloatProperty *com_shaft_radius_property_;
   rviz::FloatProperty *com_shaft_length_property_;
-
   rviz::BoolProperty *cop_enable_property_;
   rviz::ColorProperty *cop_color_property_;
   rviz::FloatProperty *cop_alpha_property_;
   rviz::FloatProperty *cop_radius_property_;
-
   rviz::BoolProperty *icp_enable_property_;
   rviz::ColorProperty *icp_color_property_;
   rviz::FloatProperty *icp_alpha_property_;
   rviz::FloatProperty *icp_radius_property_;
-
   rviz::BoolProperty *cmp_enable_property_;
   rviz::ColorProperty *cmp_color_property_;
   rviz::FloatProperty *cmp_alpha_property_;
   rviz::FloatProperty *cmp_radius_property_;
-
   rviz::BoolProperty *grf_enable_property_;
   rviz::ColorProperty *grf_color_property_;
   rviz::FloatProperty *grf_alpha_property_;
@@ -175,7 +172,6 @@ private:
   rviz::FloatProperty *grf_head_length_property_;
   rviz::FloatProperty *grf_shaft_radius_property_;
   rviz::FloatProperty *grf_shaft_length_property_;
-
   rviz::BoolProperty *support_enable_property_;
   rviz::ColorProperty *support_line_color_property_;
   rviz::FloatProperty *support_line_alpha_property_;
@@ -183,35 +179,34 @@ private:
   rviz::ColorProperty *support_mesh_color_property_;
   rviz::FloatProperty *support_mesh_alpha_property_;
   rviz::FloatProperty *support_force_threshold_property_;
-
   rviz::BoolProperty *friction_cone_enable_property_;
   rviz::ColorProperty *friction_cone_color_property_;
   rviz::FloatProperty *friction_cone_alpha_property_;
   rviz::FloatProperty *friction_cone_length_property_;
 
-  /** @brief Whole-body dynamics */
+  /** @brief Robot and whole-boyd variables */
+  std::string robot_model_;
+  bool initialized_model_;
   pinocchio::Model model_;
   pinocchio::Data data_;
-
   double force_threshold_; //!< Force threshold for detecting active contacts
-  double weight_;          //!< Weight of the robot
-  double gravity_;         //!< Gravity acceleration
-  double friction_mu_;     //!< Friction coefficient
+  double weight_;
+  double gravity_;
+  double friction_mu_;
+
   enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
   bool com_real_;     //!< Label to indicates the type of CoM display (real or
                       //!< projected)
-  bool robot_enable_; //!< Flag that indicates if the robot visualization is
-                      //!< enable
-  bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
-  bool cop_enable_; //!< Flag that indicates if the CoP visualization is enable
-  bool icp_enable_; //!< Flag that indicates if the ICP visualization is enable
-  bool cmp_enable_; //!< Flag that indicates if the CMP visualization is enable
-  bool grf_enable_; //!< Flag that indicates if the contact forces visualization
-                    //!< is enable
-  bool support_enable_; //!< Flag that indicates if the support polygon
-                        //!< visualization is enable
-  bool cone_enable_;    //!< Flag that indicates if the friction cone polygon
-                        //!< visualization is enable
+
+  /** @brief Flag that indicates if the category are enable */
+  bool robot_enable_;
+  bool com_enable_;
+  bool cop_enable_;
+  bool icp_enable_;
+  bool cmp_enable_;
+  bool grf_enable_;
+  bool support_enable_;
+  bool cone_enable_;
 };
 
 } // namespace state_rviz_plugin

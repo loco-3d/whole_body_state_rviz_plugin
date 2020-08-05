@@ -80,7 +80,7 @@ WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
       "Force Head Radius", 0.04, "Radius of the arrow's head, in meters.",
       target_category_, SLOT(updateForceArrowGeometry()), this);
 
-  // Base trajectory properties
+  // Center of Mass trajectory properties
   com_enable_property_ =
       new BoolProperty("Enable", true, "Enable/disable the CoM display",
                        com_category_, SLOT(updateCoMEnable()), this);

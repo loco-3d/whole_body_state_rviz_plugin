@@ -58,11 +58,13 @@ public:
   /** @brief Clear the visuals by deleting their objects */
   void reset() override;
 
-  /** @brief Overridden from Display. */
+  /** @brief Initialization procedure of the plugin. */
   void onInitialize() override;
 
+  /** @brief Enable procedure of the plugin. */
   void onEnable() override;
 
+  /** @brief Disable procedure of the plugin. */
   void onDisable() override;
 
   /** @brief Called when the fixed frame changed */
@@ -77,7 +79,7 @@ public:
   void processMessage(const state_msgs::WholeBodyTrajectory::ConstPtr &msg);
 
 private Q_SLOTS:
-  /** @brief Helper function to apply color and alpha to all visuals.
+  /** @brief Helper functions to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
   void updateTargetEnable();
   void updateRobotDescription();
@@ -103,10 +105,13 @@ private:
   void processCoMTrajectory();
   void processContactTrajectory();
 
+  /** @brief Load the robot model */
   void loadRobotModel();
+
+  /** @brief Clear the robot model */
   void clearRobotModel();
 
-  /** Destroy all the objects for visualization */
+  /** @bried Destroy all the objects for visualization */
   void destroyObjects();
 
   /** @brief Whole-body trajectory message */
@@ -145,14 +150,12 @@ private:
   rviz::FloatProperty *force_head_length_property_;
   rviz::FloatProperty *force_shaft_radius_property_;
   rviz::FloatProperty *force_shaft_length_property_;
-
   rviz::BoolProperty *com_enable_property_;
   rviz::EnumProperty *com_style_property_;
   rviz::ColorProperty *com_color_property_;
   rviz::FloatProperty *com_alpha_property_;
   rviz::FloatProperty *com_line_width_property_;
   rviz::FloatProperty *com_scale_property_;
-
   rviz::BoolProperty *contact_enable_property_;
   rviz::EnumProperty *contact_style_property_;
   rviz::ColorProperty *contact_color_property_;
@@ -160,23 +163,21 @@ private:
   rviz::FloatProperty *contact_line_width_property_;
   rviz::FloatProperty *contact_scale_property_;
 
-  Ogre::Vector3 last_point_position_;
-
-  enum LineStyle { BILLBOARDS, LINES, POINTS };
-
+  /** @brief Robot variables */
   std::string robot_description_;
   pinocchio::Model model_;
   pinocchio::Data data_;
   double weight_;
-  bool target_enable_; //!< Flag that indicates if the target visualization is
-                       //!< enable
-  bool com_enable_; //!< Flag that indicates if the CoM visualization is enable
-  bool com_axes_enable_; //!< Flag that indicates if the CoM axes visualization
-                         //!< is enable
-  bool contact_enable_; //!< Flag that indicates if the contact visualization is
-                        //!< enable
-  bool contact_axes_enable_; //!< Flag that indicates if the contact axes
-                             //!< visualization is enable
+
+  Ogre::Vector3 last_point_position_;
+  enum LineStyle { BILLBOARDS, LINES, POINTS };
+
+  /** @brief Flag that indicates if the category are enable */
+  bool target_enable_;
+  bool com_enable_;
+  bool com_axes_enable_;
+  bool contact_enable_;
+  bool contact_axes_enable_;
 };
 
 } // namespace state_rviz_plugin
