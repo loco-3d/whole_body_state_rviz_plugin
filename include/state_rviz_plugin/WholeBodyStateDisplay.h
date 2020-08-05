@@ -74,7 +74,8 @@ public:
   void processMessage(const state_msgs::WholeBodyState::ConstPtr &msg) override;
 
 private Q_SLOTS:
-  /** @brief Helper function to apply color and alpha to all visuals.
+  /**@{*/
+  /** Helper function to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
   void updateRobotEnable();
   void updateRobotModel();
@@ -100,6 +101,7 @@ private Q_SLOTS:
   void updateFrictionConeEnable();
   void updateFrictionConeColorAndAlpha();
   void updateFrictionConeGeometry();
+  /**@}*/
 
 private:
   void processWholeBodyState();
@@ -117,7 +119,8 @@ private:
   state_msgs::WholeBodyState::ConstPtr msg_;
   bool is_info_;
 
-  /** @brief Properties to show on side panel */
+  /**@{*/
+  /** Properties to show on side panel */
   rviz::Property *robot_category_;
   rviz::Property *com_category_;
   rviz::Property *cop_category_;
@@ -126,8 +129,10 @@ private:
   rviz::Property *grf_category_;
   rviz::Property *support_category_;
   rviz::Property *friction_category_;
+  /**@}*/
 
-  /** @brief Object for visualization of the data */
+  /**@{*/
+  /** Object for visualization of the data */
   boost::shared_ptr<rviz::Robot> robot_;
   boost::shared_ptr<PointVisual> com_visual_;
   boost::shared_ptr<ArrowVisual> comd_visual_;
@@ -137,8 +142,10 @@ private:
   std::vector<boost::shared_ptr<ArrowVisual>> grf_visual_;
   boost::shared_ptr<PolygonVisual> support_visual_;
   std::vector<boost::shared_ptr<rviz::Shape>> cones_visual_;
+  /**@}*/
 
-  /** @brief Property objects for user-editable properties */
+  /**@{*/
+  /** Property objects for user-editable properties */
   rviz::BoolProperty *robot_enable_property_;
   rviz::StringProperty *robot_model_property_;
   rviz::Property *robot_visual_enabled_property_;
@@ -183,7 +190,9 @@ private:
   rviz::ColorProperty *friction_cone_color_property_;
   rviz::FloatProperty *friction_cone_alpha_property_;
   rviz::FloatProperty *friction_cone_length_property_;
+  /**@}*/
 
+  /**@{*/
   /** @brief Robot and whole-boyd variables */
   std::string robot_model_;
   bool initialized_model_;
@@ -193,12 +202,14 @@ private:
   double weight_;
   double gravity_;
   double friction_mu_;
+  /**@}*/
 
   enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
   bool com_real_;     //!< Label to indicates the type of CoM display (real or
                       //!< projected)
 
-  /** @brief Flag that indicates if the category are enable */
+  /**@{*/
+  /** Flag that indicates if the category are enable */
   bool robot_enable_;
   bool com_enable_;
   bool cop_enable_;
@@ -207,6 +218,7 @@ private:
   bool grf_enable_;
   bool support_enable_;
   bool cone_enable_;
+  /**@}*/
 };
 
 } // namespace state_rviz_plugin
