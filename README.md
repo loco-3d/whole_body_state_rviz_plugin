@@ -5,7 +5,7 @@ The state_rviz_plugin
 
 This repository includes Rviz plugins to display the whole-body state and trajectory of a robot. These plugins uses dedicated ROS messages defined in [state_msgs](https://github.com/cmastalli/state_msgs) package. To process efficiently the messages, e.g. robot display without TF broadcasting, it requires [pinocchio](https://github.com/stack-of-tasks/pinocchio) library.
 
-[![](https://i.imgur.com/yEhoAva.gif)](https://youtu.be/6FSIQkOwTJM)
+![output](https://user-images.githubusercontent.com/3601935/89519116-c6b45600-d7d3-11ea-89a0-fc8df97df2f0.gif)
 
 ## :penguin: Building
 
