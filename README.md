@@ -14,7 +14,7 @@ This repository includes Rviz plugins to display the whole-body state and trajec
 2. Building the state_msgs and these packages in your catkin workspace:
     ```bash
 	cd your_ros_ws/
-	catkin_make
+	catkin build #catkin_make
     ```
 
 ## :copyright: Credits
