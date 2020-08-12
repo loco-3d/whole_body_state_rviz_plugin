@@ -487,9 +487,9 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
       q(jointId + 7) = state.joints[j].position;
     }
     pinocchio::centerOfMass(model_, data_, q);
-    q(0) = state.centroidal.com_position.x + data_.com[0](0);
-    q(1) = state.centroidal.com_position.y + data_.com[0](1);
-    q(2) = state.centroidal.com_position.z + data_.com[0](2);
+    q(0) = state.centroidal.com_position.x - data_.com[0](0);
+    q(1) = state.centroidal.com_position.y - data_.com[0](1);
+    q(2) = state.centroidal.com_position.z - data_.com[0](2);
     robot_->update(PinocchioLinkUpdater(
         model_, data_, q,
         boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
