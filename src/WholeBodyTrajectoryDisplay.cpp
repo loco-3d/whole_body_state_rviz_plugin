@@ -58,7 +58,6 @@ WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
       target_category_, SLOT(updateRobotAlpha()), this);
   robot_alpha_property_->setMin(0.0);
   robot_alpha_property_->setMax(1.0);
-
   force_color_property_ = new ColorProperty(
       "Force Color", QColor(85, 0, 255), "Color to draw the arrow.",
       target_category_, SLOT(updateForceColorAndAlpha()), this);
@@ -157,7 +156,9 @@ void WholeBodyTrajectoryDisplay::onInitialize() {
 
 void WholeBodyTrajectoryDisplay::onEnable() {
   loadRobotModel();
-  robot_->setVisible(true);
+  updateTargetEnable();
+  updateCoMEnable();
+  updateContactEnable();
 }
 
 void WholeBodyTrajectoryDisplay::onDisable() {
@@ -883,6 +884,7 @@ void WholeBodyTrajectoryDisplay::loadRobotModel() {
   double gravity = model_.gravity.linear().norm();
   weight_ = pinocchio::computeTotalMass(model_) * gravity;
   robot_->load(descr);
+  updateTargetEnable();
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
 }
 

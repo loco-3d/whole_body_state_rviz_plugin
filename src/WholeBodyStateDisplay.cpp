@@ -232,7 +232,14 @@ void WholeBodyStateDisplay::onInitialize() {
 void WholeBodyStateDisplay::onEnable() {
   MFDClass::onEnable();
   loadRobotModel();
-  robot_->setVisible(true);
+  updateRobotEnable();
+  updateCoMEnable();
+  updateCoPEnable();
+  updateICPEnable();
+  updateCMPEnable();
+  updateGRFEnable();
+  updateSupportEnable();
+  updateFrictionConeEnable();
 }
 
 void WholeBodyStateDisplay::onDisable() {
@@ -293,6 +300,7 @@ void WholeBodyStateDisplay::loadRobotModel() {
   weight_ = pinocchio::computeTotalMass(model_) * gravity_;
   initialized_model_ = true;
   robot_->load(descr);
+  updateRobotEnable();
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
 }
 
