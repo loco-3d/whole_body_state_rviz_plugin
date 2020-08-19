@@ -1,0 +1,4 @@
+- git:
+    uri: https://github.com/cmastalli/state_msgs.git
+    version: master
+    local-name: state_msgs

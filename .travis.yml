@@ -20,6 +20,7 @@ env:
   global: # global settings for all jobs
     - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching in industrial_ci
     - ROS_REPO=ros-testing # ros
+    - UPSTREAM_WORKSPACE=file # until state_msgs is released
   matrix:
     - ROS_DISTRO="kinetic"
     - ROS_DISTRO="kinetic" PRERELEASE=true
