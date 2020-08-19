@@ -6,11 +6,11 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
-#define STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
+#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
+#define WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
 
-#include "state_rviz_plugin/ArrowVisual.h"
-#include "state_rviz_plugin/PointVisual.h"
+#include "whole_body_state_rviz_plugin/ArrowVisual.h"
+#include "whole_body_state_rviz_plugin/PointVisual.h"
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/model.hpp>
 #include <rviz/message_filter_display.h>
@@ -21,7 +21,7 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/robot/robot.h>
-#include <state_msgs/WholeBodyTrajectory.h>
+#include <whole_body_state_msgs/WholeBodyTrajectory.h>
 
 namespace Ogre {
 class ManualObject;
@@ -39,14 +39,14 @@ class Axes;
 
 } // namespace rviz
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 /**
  * @class WholeBodyTrajectoryDisplay
- * @brief Displays a state_msgs::WholeBodyTrajectory message
+ * @brief Displays a whole_body_state_msgs::WholeBodyTrajectory message
  */
 class WholeBodyTrajectoryDisplay
-    : public rviz::MessageFilterDisplay<state_msgs::WholeBodyTrajectory> {
+    : public rviz::MessageFilterDisplay<whole_body_state_msgs::WholeBodyTrajectory> {
   Q_OBJECT
 public:
   /** @brief Constructor function */
@@ -73,10 +73,10 @@ public:
   /**
    * @brief Function to handle an incoming ROS message
    * This is our callback to handle an incoming message
-   * @param const state_msgs::WholeBodyTrajectory::ConstPtr& Whole-body
+   * @param const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr& Whole-body
    * trajectory msg
    */
-  void processMessage(const state_msgs::WholeBodyTrajectory::ConstPtr &msg);
+  void processMessage(const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg);
 
 private Q_SLOTS:
   /**@{*/
@@ -119,7 +119,7 @@ private:
   void destroyObjects();
 
   /** @brief Whole-body trajectory message */
-  state_msgs::WholeBodyTrajectory::ConstPtr msg_;
+  whole_body_state_msgs::WholeBodyTrajectory::ConstPtr msg_;
 
   /** @brief Indicates if it's been received a message */
   bool is_info_;
@@ -194,6 +194,6 @@ private:
   /**@}*/
 };
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
-#endif // STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
+#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H

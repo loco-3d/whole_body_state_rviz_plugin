@@ -6,8 +6,8 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "state_rviz_plugin/WholeBodyTrajectoryDisplay.h"
-#include "state_rviz_plugin/PinocchioLinkUpdater.h"
+#include "whole_body_state_rviz_plugin/WholeBodyTrajectoryDisplay.h"
+#include "whole_body_state_rviz_plugin/PinocchioLinkUpdater.h"
 #include <Eigen/Dense>
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -18,7 +18,7 @@
 
 using namespace rviz;
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 void linkUpdaterStatusFunction(rviz::StatusLevel level,
                                const std::string &link_name,
@@ -449,7 +449,7 @@ void WholeBodyTrajectoryDisplay::updateContactLineProperties() {
 }
 
 void WholeBodyTrajectoryDisplay::processMessage(
-    const state_msgs::WholeBodyTrajectory::ConstPtr &msg) {
+    const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg) {
   // Updating the message
   msg_ = msg;
   is_info_ = true;
@@ -474,7 +474,7 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
       return;
     }
 
-    const state_msgs::WholeBodyState &state = msg_->trajectory.back();
+    const whole_body_state_msgs::WholeBodyState &state = msg_->trajectory.back();
     Eigen::VectorXd q = Eigen::VectorXd::Zero(model_.nq);
     q(3) = state.centroidal.base_orientation.x;
     q(4) = state.centroidal.base_orientation.y;
@@ -497,7 +497,7 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
     size_t n_contacts = state.contacts.size();
     force_visual_.clear();
     for (size_t i = 0; i < n_contacts; ++i) {
-      const state_msgs::ContactState &contact = state.contacts[i];
+      const whole_body_state_msgs::ContactState &contact = state.contacts[i];
       // Getting the contact position
       Ogre::Vector3 contact_pos(contact.pose.position.x,
                                 contact.pose.position.y,
@@ -565,7 +565,7 @@ void WholeBodyTrajectoryDisplay::processCoMTrajectory() {
     std::size_t n_points = msg_->trajectory.size();
     com_axes_.clear();
     for (std::size_t i = 0; i < n_points; ++i) {
-      const state_msgs::WholeBodyState &state = msg_->trajectory[i];
+      const whole_body_state_msgs::WholeBodyState &state = msg_->trajectory[i];
       // Obtaining the CoM position and the base orientation
       Ogre::Vector3 com_position;
       Ogre::Quaternion base_orientation;
@@ -681,10 +681,10 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
     std::size_t n_traj = 0;
     std::map<std::string, std::size_t> contact_traj_id;
     for (std::size_t i = 0; i < n_points; ++i) {
-      const state_msgs::WholeBodyState &state = msg_->trajectory[i];
+      const whole_body_state_msgs::WholeBodyState &state = msg_->trajectory[i];
       std::size_t n_contacts = state.contacts.size();
       for (std::size_t k = 0; k < n_contacts; ++k) {
-        state_msgs::ContactState contact = msg_->trajectory[i].contacts[k];
+        whole_body_state_msgs::ContactState contact = msg_->trajectory[i].contacts[k];
         if (contact_traj_id.find(contact.name) ==
             contact_traj_id.end()) { // a new swing trajectory
           contact_traj_id[contact.name] = n_traj;
@@ -718,10 +718,10 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
 
     std::size_t traj_id = 0;
     for (std::size_t i = 0; i < n_points; ++i) {
-      const state_msgs::WholeBodyState &state = msg_->trajectory[i];
+      const whole_body_state_msgs::WholeBodyState &state = msg_->trajectory[i];
       std::size_t n_contacts = state.contacts.size();
       for (std::size_t k = 0; k < n_contacts; ++k) {
-        const state_msgs::ContactState &contact = state.contacts[k];
+        const whole_body_state_msgs::ContactState &contact = state.contacts[k];
         if (contact_traj_id.find(contact.name) ==
             contact_traj_id.end()) { // a new swing trajectory
           contact_traj_id[contact.name] = traj_id;
@@ -770,7 +770,7 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
         std::size_t traj_id = traj_it->second;
         std::size_t id = contact_vec_id.find(traj_id)->second;
         if (id < n_contacts) {
-          const state_msgs::ContactState &contact = state.contacts[id];
+          const whole_body_state_msgs::ContactState &contact = state.contacts[id];
           Ogre::Vector3 contact_position;
           Ogre::Quaternion contact_orientation;
           contact_position.x = contact.pose.position.x;
@@ -968,8 +968,8 @@ void WholeBodyTrajectoryDisplay::pushBackContactAxes(
   }
 }
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(state_rviz_plugin::WholeBodyTrajectoryDisplay,
+PLUGINLIB_EXPORT_CLASS(whole_body_state_rviz_plugin::WholeBodyTrajectoryDisplay,
                        rviz::Display)

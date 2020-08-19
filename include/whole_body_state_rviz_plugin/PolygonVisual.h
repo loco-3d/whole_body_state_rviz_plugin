@@ -6,10 +6,10 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H
-#define STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H
+#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H
+#define WHOLE_BODY_STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H
 
-#include "state_rviz_plugin/LineVisual.h"
+#include "whole_body_state_rviz_plugin/LineVisual.h"
 #include <rviz/ogre_helpers/mesh_shape.h>
 #include <rviz/properties/quaternion_property.h>
 
@@ -18,7 +18,7 @@ class Vector3;
 class Quaternion;
 } // namespace Ogre
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 struct Triangle {
   Triangle(unsigned int _v1, unsigned int _v2, unsigned int _v3)
@@ -95,7 +95,7 @@ private:
   boost::shared_ptr<rviz::MeshShape> mesh_;
 
   /** @brief The object implementing the lines */
-  std::vector<boost::shared_ptr<state_rviz_plugin::LineVisual>> line_;
+  std::vector<boost::shared_ptr<whole_body_state_rviz_plugin::LineVisual>> line_;
 
   /** @brief A SceneNode whose pose is set to match the coordinate frame */
   Ogre::SceneNode *frame_node_;
@@ -106,6 +106,6 @@ private:
   Ogre::SceneManager *scene_manager_;
 };
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
-#endif // STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H
+#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H

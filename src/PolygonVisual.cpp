@@ -10,10 +10,10 @@
 #include <OgreSceneNode.h>
 #include <OgreVector3.h>
 
-#include "state_rviz_plugin/PolygonVisual.h"
+#include "whole_body_state_rviz_plugin/PolygonVisual.h"
 #include <rviz/ogre_helpers/line.h>
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 PolygonVisual::PolygonVisual(Ogre::SceneManager *scene_manager,
                              Ogre::SceneNode *parent_node) {
@@ -57,7 +57,7 @@ void PolygonVisual::setVertices(std::vector<Ogre::Vector3> &vertices) {
       // We create the line object within the frame node so that we can
       // set its position and direction relative to its header frame.
       line_[counter].reset(
-          new state_rviz_plugin::LineVisual(scene_manager_, frame_node_));
+          new whole_body_state_rviz_plugin::LineVisual(scene_manager_, frame_node_));
 
       line_[counter]->setArrow(vertices[current_it], vertices[i + 1]);
 
@@ -114,4 +114,4 @@ void PolygonVisual::setLineRadius(float radius) {
   }
 }
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin

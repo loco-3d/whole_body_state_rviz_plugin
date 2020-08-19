@@ -10,10 +10,10 @@
 #include <OgreSceneNode.h>
 #include <OgreVector3.h>
 
-#include "state_rviz_plugin/LineVisual.h"
+#include "whole_body_state_rviz_plugin/LineVisual.h"
 #include <rviz/ogre_helpers/arrow.h>
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 LineVisual::LineVisual(Ogre::SceneManager *scene_manager,
                        Ogre::SceneNode *parent_node)
@@ -72,4 +72,4 @@ void LineVisual::setProperties(float shaft_diameter, float head_length,
   arrow_->set(distance_, shaft_diameter, head_length, head_diameter);
 }
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin

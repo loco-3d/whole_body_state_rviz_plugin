@@ -6,7 +6,7 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "state_rviz_plugin/PinocchioLinkUpdater.h"
+#include "whole_body_state_rviz_plugin/PinocchioLinkUpdater.h"
 #include <rviz/frame_manager.h>
 
 #include <tf/tf.h>
@@ -15,7 +15,7 @@
 #include <OgreVector3.h>
 #include <pinocchio/algorithm/frames.hpp>
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 PinocchioLinkUpdater::PinocchioLinkUpdater(
     pinocchio::Model &model, pinocchio::Data &data,
@@ -61,4 +61,4 @@ void PinocchioLinkUpdater::setLinkStatus(rviz::StatusLevel level,
   }
 }
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin

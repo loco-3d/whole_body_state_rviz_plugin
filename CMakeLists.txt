@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
-project(state_rviz_plugin)
+project(whole_body_state_rviz_plugin)
 
 # Set up project properties
-SET(PROJECT_NAME state_rviz_plugin)
+SET(PROJECT_NAME whole_body_state_rviz_plugin)
 SET(PROJECT_DESCRIPTION "State rviz plugin")
 
 # Print initial message (STATUS to avoid triggering warnings)
@@ -20,7 +20,7 @@ IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 ENDIF()
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
-  state_msgs
+  whole_body_state_msgs
   roscpp
   rviz)
 
@@ -35,13 +35,13 @@ IF(rviz_QT_VERSION VERSION_LESS "5")
   INCLUDE(${QT_USE_FILE})
 
   qt4_wrap_cpp(MOC_FILES
-    include/state_rviz_plugin/PointVisual.h
-    include/state_rviz_plugin/LineVisual.h
-    include/state_rviz_plugin/ArrowVisual.h
-    include/state_rviz_plugin/PolygonVisual.h
-    include/state_rviz_plugin/PinocchioLinkUpdater.h
-    include/state_rviz_plugin/WholeBodyStateDisplay.h
-    include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
+    include/whole_body_state_rviz_plugin/PointVisual.h
+    include/whole_body_state_rviz_plugin/LineVisual.h
+    include/whole_body_state_rviz_plugin/ArrowVisual.h
+    include/whole_body_state_rviz_plugin/PolygonVisual.h
+    include/whole_body_state_rviz_plugin/PinocchioLinkUpdater.h
+    include/whole_body_state_rviz_plugin/WholeBodyStateDisplay.h
+    include/whole_body_state_rviz_plugin/WholeBodyTrajectoryDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
 ELSE()
   MESSAGE(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
@@ -50,13 +50,13 @@ ELSE()
   SET(QT_LIBRARIES Qt5::Widgets)
 
   qt5_wrap_cpp(MOC_FILES
-    include/state_rviz_plugin/PointVisual.h
-    include/state_rviz_plugin/LineVisual.h
-    include/state_rviz_plugin/ArrowVisual.h
-    include/state_rviz_plugin/PolygonVisual.h
-    include/state_rviz_plugin/PinocchioLinkUpdater.h
-    include/state_rviz_plugin/WholeBodyStateDisplay.h
-    include/state_rviz_plugin/WholeBodyTrajectoryDisplay.h
+    include/whole_body_state_rviz_plugin/PointVisual.h
+    include/whole_body_state_rviz_plugin/LineVisual.h
+    include/whole_body_state_rviz_plugin/ArrowVisual.h
+    include/whole_body_state_rviz_plugin/PolygonVisual.h
+    include/whole_body_state_rviz_plugin/PinocchioLinkUpdater.h
+    include/whole_body_state_rviz_plugin/WholeBodyStateDisplay.h
+    include/whole_body_state_rviz_plugin/WholeBodyTrajectoryDisplay.h
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
 ENDIF()
 

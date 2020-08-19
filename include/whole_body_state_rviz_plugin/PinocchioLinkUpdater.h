@@ -6,8 +6,8 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H
-#define STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H
+#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H
+#define WHOLE_BODY_STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H
 
 #include <boost/function.hpp>
 #include <pinocchio/multibody/data.hpp>
@@ -15,7 +15,7 @@
 #include <rviz/robot/link_updater.h>
 #include <string>
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 class PinocchioLinkUpdater : public rviz::LinkUpdater {
 public:
@@ -43,6 +43,6 @@ private:
   std::string tf_prefix_;
 };
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
-#endif // STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H
+#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H

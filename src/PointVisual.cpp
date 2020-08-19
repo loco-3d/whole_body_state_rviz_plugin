@@ -11,9 +11,9 @@
 #include <OgreVector3.h>
 
 #include <rviz/ogre_helpers/shape.h>
-#include <state_rviz_plugin/PointVisual.h>
+#include <whole_body_state_rviz_plugin/PointVisual.h>
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 PointVisual::PointVisual(Ogre::SceneManager *scene_manager,
                          Ogre::SceneNode *parent_node)
@@ -63,4 +63,4 @@ void PointVisual::setColor(float r, float g, float b, float a) {
 
 void PointVisual::setRadius(float r) { radius_ = r; }
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin

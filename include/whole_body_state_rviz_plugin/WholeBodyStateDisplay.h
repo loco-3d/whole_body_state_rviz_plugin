@@ -6,8 +6,8 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
-#define STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
+#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
+#define WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
 
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/model.hpp>
@@ -17,10 +17,10 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/robot/robot.h>
-#include <state_msgs/WholeBodyState.h>
-#include "state_rviz_plugin/ArrowVisual.h"
-#include "state_rviz_plugin/PointVisual.h"
-#include "state_rviz_plugin/PolygonVisual.h"
+#include <whole_body_state_msgs/WholeBodyState.h>
+#include "whole_body_state_rviz_plugin/ArrowVisual.h"
+#include "whole_body_state_rviz_plugin/PointVisual.h"
+#include "whole_body_state_rviz_plugin/PolygonVisual.h"
 
 namespace Ogre {
 class SceneNode;
@@ -35,14 +35,14 @@ class IntProperty;
 class Shape;
 } // namespace rviz
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 /**
  * @class WholeBodyStateDisplay
- * @brief Displays a state_msgs::WholeBodyState message
+ * @brief Displays a whole_body_state_msgs::WholeBodyState message
  */
 class WholeBodyStateDisplay
-    : public rviz::MessageFilterDisplay<state_msgs::WholeBodyState> {
+    : public rviz::MessageFilterDisplay<whole_body_state_msgs::WholeBodyState> {
   Q_OBJECT
 public:
   /** @brief Constructor function */
@@ -69,9 +69,9 @@ public:
   /**
    * @brief Function to handle an incoming ROS message
    * This is our callback to handle an incoming message
-   * @param const state_msgs::WholeBodyState::ConstPtr& Whole-body state msg
+   * @param const whole_body_state_msgs::WholeBodyState::ConstPtr& Whole-body state msg
    */
-  void processMessage(const state_msgs::WholeBodyState::ConstPtr &msg) override;
+  void processMessage(const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) override;
 
 private Q_SLOTS:
   /**@{*/
@@ -116,7 +116,7 @@ private:
   void clearRobotModel();
 
   /** @brief Whole-body state message */
-  state_msgs::WholeBodyState::ConstPtr msg_;
+  whole_body_state_msgs::WholeBodyState::ConstPtr msg_;
   bool is_info_;
 
   /**@{*/
@@ -221,6 +221,6 @@ private:
   /**@}*/
 };
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
-#endif // STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
+#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
