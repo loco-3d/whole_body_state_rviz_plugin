@@ -5,11 +5,11 @@ project(state_rviz_plugin)
 SET(PROJECT_NAME state_rviz_plugin)
 SET(PROJECT_DESCRIPTION "State rviz plugin")
 
-# Print initial message
+# Print initial message (STATUS to avoid triggering warnings)
 MESSAGE(STATUS "${PROJECT_DESCRIPTION}, version ${PROJECT_VERSION}")
-MESSAGE("Copyright (C) 2020 University of Edinburgh, Istituto Italiano di Tecnologia")
-MESSAGE("All rights reserved.")
-MESSAGE("Released under the BSD 3-Clause License.")
+MESSAGE(STATUS "Copyright (C) 2020 University of Edinburgh, Istituto Italiano di Tecnologia")
+MESSAGE(STATUS "All rights reserved.")
+MESSAGE(STATUS "Released under the BSD 3-Clause License.")
 
 # Set a default build type to 'Release' if none was specified
 IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -90,6 +90,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}  ${QT_LIBRARIES}
                                        ${Boost_LIBRARIES}
                                        ${catkin_LIBRARIES}
                                        ${pinocchio_LIBRARIES})
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-ignored-attributes)  # Silence Eigen::Tensor warnings
 # ADD_DEPENDENCIES(${PROJECT_NAME}  ${state_msgs_EXPORTED_TARGETS})
 
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/plugin_description.xml DESTINATION share/${PROJECT_NAME})
