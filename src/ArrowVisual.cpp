@@ -11,9 +11,9 @@
 #include <OgreVector3.h>
 
 #include <rviz/ogre_helpers/arrow.h>
-#include <state_rviz_plugin/ArrowVisual.h>
+#include <whole_body_state_rviz_plugin/ArrowVisual.h>
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 ArrowVisual::ArrowVisual(Ogre::SceneManager *scene_manager,
                          Ogre::SceneNode *parent_node) {
@@ -62,4 +62,4 @@ void ArrowVisual::setProperties(float shaft_length, float shaft_diameter,
   arrow_->set(shaft_length, shaft_diameter, head_length, head_diameter);
 }
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin

@@ -6,8 +6,10 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef STATE_RVIZ_PLUGIN_POINT_VISUAL_H
-#define STATE_RVIZ_PLUGIN_POINT_VISUAL_H
+#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
+#define WHOLE_BODY_STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
+
+#include <rviz/properties/quaternion_property.h>
 
 namespace Ogre {
 class Vector3;
@@ -15,34 +17,37 @@ class Quaternion;
 } // namespace Ogre
 
 namespace rviz {
-class Shape;
+class Arrow;
 }
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 /**
- * @class PointVisual
- * @brief Visualizes 3d point
- * Each instance of PointVisual represents the visualization of a single
- * Ogre::Vector3 data. Currently it just shows a sphere in the point position
+ * @class ArrowVisual
+ * @brief Visualizes 3d arrow
+ * Each instance of ArrowVisual represents the visualization of a single arrow
+ * data. Currently it just shows an arrow with the direction and magnitude of
+ * the acceleration vector
  */
-class PointVisual {
+class ArrowVisual {
 public:
   /**
    * @brief Constructor that creates the visual stuff and puts it into the scene
    * @param scene_manager  Manager the organization and rendering of the scene
-   * @param parent_node    Represent the point as node in the scene
+   * @param parent_node    Represent the arrow as node in the scene
    */
-  PointVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
+  ArrowVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
 
   /** @brief Destructor that removes the visual stuff from the scene */
-  ~PointVisual();
+  ~ArrowVisual();
 
   /**
-   * @brief Configure the visual to show the point
-   * @param point  Point position
+   * @brief Configure the visual to show the arrow
+   * @param position     Arrow position
+   * @param orientation  Arrow orientation
    */
-  void setPoint(const Ogre::Vector3 &point);
+  void setArrow(const Ogre::Vector3 &position,
+                const Ogre::Quaternion &orientation);
 
   /**
    * @brief Set the position of the coordinate frame
@@ -52,7 +57,7 @@ public:
 
   /**
    * @brief Set the orientation of the coordinate frame
-   * @param orientation  Frame orientation
+   * @param orientation Frame orientation
    */
   void setFrameOrientation(const Ogre::Quaternion &orientation);
 
@@ -66,14 +71,18 @@ public:
   void setColor(float r, float g, float b, float a);
 
   /**
-   * @brief Set the radius of the point
-   * @param r  Radius value
+   * @brief Set the parameters for this arrow
+   * @param shaft_length    Length of the arrow's shaft
+   * @param shaft_diameter  Diameter of the arrow's shaft
+   * @param head_length     Length of the arrow's head
+   * @param head_diameter   Diameter of the arrow's head
    */
-  void setRadius(float r);
+  void setProperties(float shaft_length, float shaft_diameter,
+                     float head_length, float head_diameter);
 
 private:
-  /** @brief The object implementing the point circle */
-  rviz::Shape *point_;
+  /** @brief The object implementing the arrow */
+  rviz::Arrow *arrow_;
 
   /** @brief A SceneNode whose pose is set to match the coordinate frame */
   Ogre::SceneNode *frame_node_;
@@ -82,11 +91,8 @@ private:
    * destroy the ``frame_node_``.
    */
   Ogre::SceneManager *scene_manager_;
-
-  /** @brief Radius value */
-  float radius_;
 };
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
-#endif // STATE_RVIZ_PLUGIN_POINT_VISUAL_H
+#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_ARROW_VISUAL_H

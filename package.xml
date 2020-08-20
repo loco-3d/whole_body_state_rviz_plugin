@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>state_rviz_plugin</name>
+  <name>whole_body_state_rviz_plugin</name>
   <version>0.0.1</version>
   <description>
     Visualization plugins of state messages
@@ -13,11 +13,11 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rviz</build_depend>
-  <build_depend>state_msgs</build_depend>
+  <build_depend>whole_body_state_msgs</build_depend>
   <build_depend>pinocchio</build_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rviz</exec_depend>
-  <exec_depend>state_msgs</exec_depend>
+  <exec_depend>whole_body_state_msgs</exec_depend>
   <exec_depend>pinocchio</exec_depend>
 
   <export>

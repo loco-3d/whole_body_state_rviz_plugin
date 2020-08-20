@@ -1,0 +1,4 @@
+- git:
+    uri: https://github.com/cmastalli/whole_body_state_msgs.git
+    version: master
+    local-name: whole_body_state_msgs

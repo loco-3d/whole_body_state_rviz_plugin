@@ -6,8 +6,8 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "state_rviz_plugin/WholeBodyStateDisplay.h"
-#include "state_rviz_plugin/PinocchioLinkUpdater.h"
+#include "whole_body_state_rviz_plugin/WholeBodyStateDisplay.h"
+#include "whole_body_state_rviz_plugin/PinocchioLinkUpdater.h"
 #include <Eigen/Dense>
 #include <QTimer>
 #include <pinocchio/algorithm/center-of-mass.hpp>
@@ -15,7 +15,7 @@
 
 using namespace rviz;
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 void linkUpdaterStatusFunction(rviz::StatusLevel level,
                                const std::string &link_name,
@@ -541,7 +541,7 @@ void WholeBodyStateDisplay::updateFrictionConeGeometry() {
 }
 
 void WholeBodyStateDisplay::processMessage(
-    const state_msgs::WholeBodyState::ConstPtr &msg) {
+    const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) {
   msg_ = msg;
   is_info_ = true;
   processWholeBodyState();
@@ -607,7 +607,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   Eigen::Vector3d cop_pos = Eigen::Vector3d::Zero();
   Eigen::Vector3d total_force = Eigen::Vector3d::Zero();
   for (size_t i = 0; i < num_contacts; ++i) {
-    const state_msgs::ContactState &contact = msg_->contacts[i];
+    const whole_body_state_msgs::ContactState &contact = msg_->contacts[i];
     std::string name = contact.name;
 
     // Getting the contact position
@@ -838,7 +838,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   }
 }
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(state_rviz_plugin::WholeBodyStateDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(whole_body_state_rviz_plugin::WholeBodyStateDisplay, rviz::Display)

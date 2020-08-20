@@ -6,9 +6,10 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
-#define STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
+#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_LINE_VISUAL_H
+#define WHOLE_BODY_STATE_RVIZ_PLUGIN_LINE_VISUAL_H
 
+#include <Eigen/Dense>
 #include <rviz/properties/quaternion_property.h>
 
 namespace Ogre {
@@ -20,34 +21,34 @@ namespace rviz {
 class Arrow;
 }
 
-namespace state_rviz_plugin {
+namespace whole_body_state_rviz_plugin {
 
 /**
- * @class ArrowVisual
- * @brief Visualizes 3d arrow
- * Each instance of ArrowVisual represents the visualization of a single arrow
- * data. Currently it just shows an arrow with the direction and magnitude of
- * the acceleration vector
+ * @class LineVisual
+ * @brief Visualizes 3d line
+ * Each instance of LineVisual represents the visualization of
+ * a single arrow data. Currently it just shows an line with
+ * the initial and final points
  */
-class ArrowVisual {
+class LineVisual {
 public:
   /**
    * @brief Constructor that creates the visual stuff and puts it into the scene
    * @param scene_manager  Manager the organization and rendering of the scene
-   * @param parent_node    Represent the arrow as node in the scene
+   * @param parent_node  Represent the arrow as node in the scene
    */
-  ArrowVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
+  LineVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
 
   /** @brief Destructor that removes the visual stuff from the scene */
-  ~ArrowVisual();
+  ~LineVisual();
 
   /**
-   * @brief Configure the visual to show the arrow
-   * @param position     Arrow position
-   * @param orientation  Arrow orientation
+   * @brief Configure the visual to show the line from their points
+   * @param initial_point  Initial point of the line
+   * @param final_point    Final point of the line
    */
-  void setArrow(const Ogre::Vector3 &position,
-                const Ogre::Quaternion &orientation);
+  void setArrow(const Ogre::Vector3 &initial_point,
+                const Ogre::Vector3 &final_point);
 
   /**
    * @brief Set the position of the coordinate frame
@@ -57,7 +58,7 @@ public:
 
   /**
    * @brief Set the orientation of the coordinate frame
-   * @param orientation Frame orientation
+   * @param orientation  Frame orientation
    */
   void setFrameOrientation(const Ogre::Quaternion &orientation);
 
@@ -72,13 +73,12 @@ public:
 
   /**
    * @brief Set the parameters for this arrow
-   * @param shaft_length    Length of the arrow's shaft
    * @param shaft_diameter  Diameter of the arrow's shaft
    * @param head_length     Length of the arrow's head
    * @param head_diameter   Diameter of the arrow's head
    */
-  void setProperties(float shaft_length, float shaft_diameter,
-                     float head_length, float head_diameter);
+  void setProperties(float shaft_diameter, float head_length = 0.,
+                     float head_diameter = 0.);
 
 private:
   /** @brief The object implementing the arrow */
@@ -91,8 +91,11 @@ private:
    * destroy the ``frame_node_``.
    */
   Ogre::SceneManager *scene_manager_;
+
+  /** @brief Distance of the line */
+  float distance_;
 };
 
-} // namespace state_rviz_plugin
+} // namespace whole_body_state_rviz_plugin
 
-#endif // STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
+#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_LINE_VISUAL_H
