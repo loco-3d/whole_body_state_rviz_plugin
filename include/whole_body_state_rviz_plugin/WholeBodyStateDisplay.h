@@ -1,7 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2020, University of Edinburgh, Istituto Italiano di Tecnologia
+// Copyright (C) 2020-2021, University of Edinburgh, Istituto Italiano di
+// Tecnologia, University of Oxford.
 // Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,9 +70,14 @@ public:
   /**
    * @brief Function to handle an incoming ROS message
    * This is our callback to handle an incoming message
-   * @param const whole_body_state_msgs::WholeBodyState::ConstPtr& Whole-body state msg
+   * @param const whole_body_state_msgs::WholeBodyState::ConstPtr& Whole-body
+   * state msg
    */
-  void processMessage(const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) override;
+  void processMessage(
+      const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) override;
+
+  /** @brief render callback */
+  void update(float wall_dt, float ros_dt) override;
 
 private Q_SLOTS:
   /**@{*/
@@ -105,6 +111,8 @@ private Q_SLOTS:
 
 private:
   void processWholeBodyState();
+  bool has_new_msg_ = false; ///< Callback sets this to tell our update function
+                             ///< it needs to update the model
 
   /** @brief Loads a URDF from the ros-param named by our
    * "Robot Description" property, iterates through the links, and
@@ -117,7 +125,6 @@ private:
 
   /** @brief Whole-body state message */
   whole_body_state_msgs::WholeBodyState::ConstPtr msg_;
-  bool is_info_;
 
   /**@{*/
   /** Properties to show on side panel */
@@ -205,7 +212,7 @@ private:
   /**@}*/
 
   enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
-  bool com_real_;     //!< Label to indicates the type of CoM display (real or
+  bool com_real_; //!< Label to indicates the type of CoM display (real or
                       //!< projected)
 
   /**@{*/

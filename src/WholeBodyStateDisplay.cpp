@@ -1,7 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2020, University of Edinburgh, Istituto Italiano di Tecnologia
+// Copyright (C) 2020-2021, University of Edinburgh, Istituto Italiano di
+// Tecnologia, University of Oxford.
 // Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,10 +27,10 @@ void linkUpdaterStatusFunction(rviz::StatusLevel level,
 }
 
 WholeBodyStateDisplay::WholeBodyStateDisplay()
-    : is_info_(false), initialized_model_(false), force_threshold_(0.),
-      weight_(0.), gravity_(9.81), com_real_(true), com_enable_(true),
-      cop_enable_(true), icp_enable_(true), cmp_enable_(true),
-      grf_enable_(true), support_enable_(true), cone_enable_(true) {
+    : initialized_model_(false), force_threshold_(0.), weight_(0.),
+      gravity_(9.81), com_real_(true), com_enable_(true), cop_enable_(true),
+      icp_enable_(true), cmp_enable_(true), grf_enable_(true),
+      support_enable_(true), cone_enable_(true) {
   // Category Groups
   robot_category_ = new rviz::Property("Robot", QVariant(), "", this);
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
@@ -249,7 +250,7 @@ void WholeBodyStateDisplay::onDisable() {
 }
 
 void WholeBodyStateDisplay::fixedFrameChanged() {
-  if (is_info_) {
+  if (msg_ != nullptr) {
     processWholeBodyState();
   }
 }
@@ -550,8 +551,7 @@ void WholeBodyStateDisplay::updateFrictionConeGeometry() {
 void WholeBodyStateDisplay::processMessage(
     const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) {
   msg_ = msg;
-  is_info_ = true;
-  processWholeBodyState();
+  has_new_msg_ = true;
 }
 
 void WholeBodyStateDisplay::processWholeBodyState() {
@@ -842,6 +842,13 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     updateSupportMeshColorAndAlpha();
     support_visual_->setFramePosition(position);
     support_visual_->setFrameOrientation(orientation);
+  }
+}
+
+void WholeBodyStateDisplay::update(float wall_dt, float /*ros_dt*/) {
+  if (has_new_msg_) {
+    processWholeBodyState();
+    has_new_msg_ = false;
   }
 }
 
