@@ -10,6 +10,9 @@
 #ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
 #define WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
 
+#include "whole_body_state_rviz_plugin/ArrowVisual.h"
+#include "whole_body_state_rviz_plugin/PointVisual.h"
+#include "whole_body_state_rviz_plugin/PolygonVisual.h"
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/model.hpp>
 #include <rviz/message_filter_display.h>
@@ -19,9 +22,6 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/robot/robot.h>
 #include <whole_body_state_msgs/WholeBodyState.h>
-#include "whole_body_state_rviz_plugin/ArrowVisual.h"
-#include "whole_body_state_rviz_plugin/PointVisual.h"
-#include "whole_body_state_rviz_plugin/PolygonVisual.h"
 
 namespace Ogre {
 class SceneNode;
@@ -213,7 +213,7 @@ private:
 
   enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
   bool com_real_; //!< Label to indicates the type of CoM display (real or
-                      //!< projected)
+                  //!< projected)
 
   /**@{*/
   /** Flag that indicates if the category are enable */

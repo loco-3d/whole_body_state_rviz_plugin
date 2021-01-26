@@ -46,7 +46,8 @@ namespace whole_body_state_rviz_plugin {
  * @brief Displays a whole_body_state_msgs::WholeBodyTrajectory message
  */
 class WholeBodyTrajectoryDisplay
-    : public rviz::MessageFilterDisplay<whole_body_state_msgs::WholeBodyTrajectory> {
+    : public rviz::MessageFilterDisplay<
+          whole_body_state_msgs::WholeBodyTrajectory> {
   Q_OBJECT
 public:
   /** @brief Constructor function */
@@ -73,10 +74,11 @@ public:
   /**
    * @brief Function to handle an incoming ROS message
    * This is our callback to handle an incoming message
-   * @param const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr& Whole-body
-   * trajectory msg
+   * @param const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr&
+   * Whole-body trajectory msg
    */
-  void processMessage(const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg);
+  void processMessage(
+      const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg);
 
 private Q_SLOTS:
   /**@{*/

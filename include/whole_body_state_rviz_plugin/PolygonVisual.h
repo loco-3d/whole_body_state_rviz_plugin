@@ -95,7 +95,8 @@ private:
   boost::shared_ptr<rviz::MeshShape> mesh_;
 
   /** @brief The object implementing the lines */
-  std::vector<boost::shared_ptr<whole_body_state_rviz_plugin::LineVisual>> line_;
+  std::vector<boost::shared_ptr<whole_body_state_rviz_plugin::LineVisual>>
+      line_;
 
   /** @brief A SceneNode whose pose is set to match the coordinate frame */
   Ogre::SceneNode *frame_node_;

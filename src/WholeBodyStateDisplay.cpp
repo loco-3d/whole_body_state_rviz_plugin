@@ -855,4 +855,5 @@ void WholeBodyStateDisplay::update(float wall_dt, float /*ros_dt*/) {
 } // namespace whole_body_state_rviz_plugin
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(whole_body_state_rviz_plugin::WholeBodyStateDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(whole_body_state_rviz_plugin::WholeBodyStateDisplay,
+                       rviz::Display)
