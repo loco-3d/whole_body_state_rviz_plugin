@@ -634,7 +634,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       }
     }
 
-    // Building the support polygone
+    // Building the support polygon
     if (for_dir.norm() > force_threshold_ && std::isfinite(contact_pos.x) &&
         std::isfinite(contact_pos.y) && std::isfinite(contact_pos.z)) {
       Eigen::Quaterniond for_q;

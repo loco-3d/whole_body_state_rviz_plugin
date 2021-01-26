@@ -10,6 +10,7 @@
 #include <OgreSceneNode.h>
 #include <OgreVector3.h>
 
+#include <ros/console.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <whole_body_state_rviz_plugin/ArrowVisual.h>
 
@@ -59,6 +60,22 @@ void ArrowVisual::setColor(float r, float g, float b, float a) {
 
 void ArrowVisual::setProperties(float shaft_length, float shaft_diameter,
                                 float head_length, float head_diameter) {
+  if (!std::isfinite(shaft_length)) {
+    ROS_WARN_STREAM("Shaft length is not finite: " << shaft_length);
+    return;
+  }
+  if (!std::isfinite(shaft_diameter)) {
+    ROS_WARN_STREAM("Shaft length is not finite: " << shaft_length);
+    return;
+  }
+  if (!std::isfinite(head_length)) {
+    ROS_WARN_STREAM("Shaft length is not finite: " << shaft_length);
+    return;
+  }
+  if (!std::isfinite(head_diameter)) {
+    ROS_WARN_STREAM("Shaft length is not finite: " << shaft_length);
+    return;
+  }
   arrow_->set(shaft_length, shaft_diameter, head_length, head_diameter);
 }
 
