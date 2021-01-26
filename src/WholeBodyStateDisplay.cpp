@@ -293,8 +293,15 @@ void WholeBodyStateDisplay::loadRobotModel() {
   }
 
   // Initializing the dynamics from the URDF model
-  pinocchio::urdf::buildModelFromXML(robot_model_,
-                                     pinocchio::JointModelFreeFlyer(), model_);
+  try {
+    pinocchio::urdf::buildModelFromXML(
+        robot_model_, pinocchio::JointModelFreeFlyer(), model_);
+  } catch (const std::invalid_argument &e) {
+    std::string error_msg = "Failed to instantiate model: ";
+    error_msg += e.what();
+    setStatus(StatusProperty::Error, "Pinocchio-URDFParser",
+              QString::fromStdString(error_msg));
+  }
   data_ = pinocchio::Data(model_);
   gravity_ = model_.gravity.linear().norm();
   weight_ = pinocchio::computeTotalMass(model_) * gravity_;
