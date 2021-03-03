@@ -90,7 +90,7 @@ ADD_LIBRARY(${PROJECT_NAME}  ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}  ${QT_LIBRARIES}
                                        ${Boost_LIBRARIES}
                                        ${catkin_LIBRARIES}
-                                       ${pinocchio_LIBRARIES})
+                                       pinocchio::pinocchio)
 TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wno-ignored-attributes)  # Silence Eigen::Tensor warnings
 
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/plugin_description.xml DESTINATION share/${PROJECT_NAME})
