@@ -280,6 +280,7 @@ void WholeBodyStateDisplay::loadRobotModel() {
   if (content.empty()) {
     clearRobotModel();
     setStatus(StatusProperty::Error, "URDF", "URDF is empty");
+    ROS_ERROR("URDF is empty");
     return;
   }
   if (content == robot_model_) {
@@ -290,6 +291,7 @@ void WholeBodyStateDisplay::loadRobotModel() {
   if (!descr.initString(robot_model_)) {
     clearRobotModel();
     setStatus(StatusProperty::Error, "URDF", "Failed to parse URDF model");
+    ROS_ERROR("Failed to parse URDF model");
     return;
   }
 
@@ -302,6 +304,8 @@ void WholeBodyStateDisplay::loadRobotModel() {
     error_msg += e.what();
     setStatus(StatusProperty::Error, "Pinocchio-URDFParser",
               QString::fromStdString(error_msg));
+    ROS_ERROR_STREAM(error_msg);
+    return;
   }
   data_ = pinocchio::Data(model_);
   gravity_ = model_.gravity.linear().norm();
