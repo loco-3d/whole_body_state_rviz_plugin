@@ -247,6 +247,16 @@ void WholeBodyStateDisplay::onDisable() {
   MFDClass::onDisable();
   robot_->setVisible(false);
   clearRobotModel();
+  // Remove all artefacts:
+  com_visual_.reset();
+  comd_visual_.reset();
+  cop_visual_.reset();
+  icp_visual_.reset();
+  cmp_visual_.reset();
+  grf_visual_.clear();
+  support_visual_.reset();
+  cones_visual_.clear();
+  context_->queueRender();
 }
 
 void WholeBodyStateDisplay::fixedFrameChanged() {
