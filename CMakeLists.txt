@@ -75,8 +75,7 @@ catkin_package(
   CATKIN_DEPENDS)
 
 
-INCLUDE_DIRECTORIES(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-                 
+INCLUDE_DIRECTORIES(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})            
 
 SET(SOURCE_FILES
   src/PointVisual.cpp
