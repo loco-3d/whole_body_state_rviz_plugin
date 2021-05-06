@@ -169,6 +169,7 @@ private:
   rviz::FloatProperty *com_shaft_radius_property_;
   rviz::FloatProperty *com_shaft_length_property_;
   rviz::BoolProperty *cop_enable_property_;
+  rviz::BoolProperty *cop_enable_status_property_;
   rviz::ColorProperty *cop_color_property_;
   rviz::FloatProperty *cop_alpha_property_;
   rviz::FloatProperty *cop_radius_property_;
@@ -181,6 +182,7 @@ private:
   rviz::FloatProperty *cmp_alpha_property_;
   rviz::FloatProperty *cmp_radius_property_;
   rviz::BoolProperty *grf_enable_property_;
+  rviz::BoolProperty *grf_enable_status_property_;
   rviz::ColorProperty *grf_color_property_;
   rviz::FloatProperty *grf_alpha_property_;
   rviz::FloatProperty *grf_head_radius_property_;
@@ -188,12 +190,14 @@ private:
   rviz::FloatProperty *grf_shaft_radius_property_;
   rviz::FloatProperty *grf_shaft_length_property_;
   rviz::BoolProperty *support_enable_property_;
+  rviz::BoolProperty *support_enable_status_property_;
   rviz::ColorProperty *support_line_color_property_;
   rviz::FloatProperty *support_line_alpha_property_;
   rviz::FloatProperty *support_line_radius_property_;
   rviz::ColorProperty *support_mesh_color_property_;
   rviz::FloatProperty *support_mesh_alpha_property_;
   rviz::FloatProperty *support_force_threshold_property_;
+  rviz::BoolProperty *friction_cone_enable_status_property_;
   rviz::BoolProperty *friction_cone_enable_property_;
   rviz::ColorProperty *friction_cone_color_property_;
   rviz::FloatProperty *friction_cone_alpha_property_;
@@ -207,6 +211,10 @@ private:
   pinocchio::Model model_;
   pinocchio::Data data_;
   double force_threshold_; //!< Force threshold for detecting active contacts
+  bool use_contact_status_in_cop_;
+  bool use_contact_status_in_grf_;
+  bool use_contact_status_in_support_;
+  bool use_contact_status_in_friction_cone_;
   double weight_;
   double gravity_;
   double friction_mu_;
