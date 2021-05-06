@@ -27,12 +27,13 @@ void linkUpdaterStatusFunction(rviz::StatusLevel level,
 }
 
 WholeBodyStateDisplay::WholeBodyStateDisplay()
-    : initialized_model_(false), force_threshold_(0.), use_contact_status_in_cop_(true),
-      use_contact_status_in_grf_(true), use_contact_status_in_support_(true),
-      use_contact_status_in_friction_cone_(true), weight_(0.),
-      gravity_(9.81), com_real_(true), com_enable_(true), cop_enable_(true),
-      icp_enable_(true), cmp_enable_(true), grf_enable_(true),
-      support_enable_(true), cone_enable_(true) {
+    : initialized_model_(false), force_threshold_(0.),
+      use_contact_status_in_cop_(true), use_contact_status_in_grf_(true),
+      use_contact_status_in_support_(true),
+      use_contact_status_in_friction_cone_(true), weight_(0.), gravity_(9.81),
+      com_real_(true), com_enable_(true), cop_enable_(true), icp_enable_(true),
+      cmp_enable_(true), grf_enable_(true), support_enable_(true),
+      cone_enable_(true) {
   // Category Groups
   robot_category_ = new rviz::Property("Robot", QVariant(), "", this);
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
@@ -107,9 +108,10 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   cop_enable_property_ =
       new BoolProperty("Enable", true, "Enable/disable the CoP display",
                        cop_category_, SLOT(updateCoPEnable()), this);
-  cop_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
-                       cop_category_, SLOT(updateCoPEnable()), this);
+  cop_enable_status_property_ = new BoolProperty(
+      "Use Contact Status", true,
+      "Use contact status to detect whether a contact is active", cop_category_,
+      SLOT(updateCoPEnable()), this);
   cop_color_property_ = new rviz::ColorProperty(
       "Color", QColor(204, 41, 204), "Color of a point", cop_category_,
       SLOT(updateCoPColorAndAlpha()), this);
@@ -158,9 +160,10 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   grf_enable_property_ = new BoolProperty(
       "Enable", true, "Enable/disable the contact force display", grf_category_,
       SLOT(updateGRFEnable()), this);
-  grf_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
-                       grf_category_, SLOT(updateGRFEnable()), this);
+  grf_enable_status_property_ = new BoolProperty(
+      "Use Contact Status", true,
+      "Use contact status to detect whether a contact is active", grf_category_,
+      SLOT(updateGRFEnable()), this);
   grf_color_property_ =
       new ColorProperty("Color", QColor(85, 0, 255), "Color to draw the arrow.",
                         grf_category_, SLOT(updateGRFColorAndAlpha()), this);
@@ -186,9 +189,10 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   support_enable_property_ = new BoolProperty(
       "Enable", true, "Enable/disable the support polygon display",
       support_category_, SLOT(updateSupportEnable()), this);
-  support_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
-                       support_category_, SLOT(updateSupportEnable()), this);
+  support_enable_status_property_ = new BoolProperty(
+      "Use Contact Status", true,
+      "Use contact status to detect whether a contact is active",
+      support_category_, SLOT(updateSupportEnable()), this);
   support_line_color_property_ = new ColorProperty(
       "Line Color", QColor(85, 0, 255), "Color to draw the line.",
       support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
@@ -216,9 +220,10 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   friction_cone_enable_property_ = new BoolProperty(
       "Enable", true, "Enable/disable the friction cone display",
       friction_category_, SLOT(updateFrictionConeEnable()), this);
-  friction_cone_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
-                       friction_category_, SLOT(updateFrictionConeEnable()), this);
+  friction_cone_enable_status_property_ = new BoolProperty(
+      "Use Contact Status", true,
+      "Use contact status to detect whether a contact is active",
+      friction_category_, SLOT(updateFrictionConeEnable()), this);
   friction_cone_color_property_ = new ColorProperty(
       "Color", QColor(255, 0, 127), "Color to draw the friction cone.",
       friction_category_, SLOT(updateFrictionConeColorAndAlpha()), this);
@@ -551,7 +556,8 @@ void WholeBodyStateDisplay::updateSupportMeshColorAndAlpha() {
 
 void WholeBodyStateDisplay::updateFrictionConeEnable() {
   cone_enable_ = friction_cone_enable_property_->getBool();
-  use_contact_status_in_friction_cone_ = friction_cone_enable_status_property_->getBool();
+  use_contact_status_in_friction_cone_ =
+      friction_cone_enable_status_property_->getBool();
   if (cones_visual_.size() != 0 && !cone_enable_) {
     cones_visual_.clear();
   }
@@ -678,7 +684,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     }
 
     // Building the support polygon
-    if (std::isfinite(contact_pos.x) && std::isfinite(contact_pos.y) && std::isfinite(contact_pos.z)) {
+    if (std::isfinite(contact_pos.x) && std::isfinite(contact_pos.y) &&
+        std::isfinite(contact_pos.z)) {
       Eigen::Quaterniond for_q;
       for_q.setFromTwoVectors(for_ref_dir, for_dir);
       Ogre::Quaternion contact_for_orientation(for_q.w(), for_q.x(), for_q.y(),
@@ -724,7 +731,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       } else {
         active_contact_in_support = for_dir.norm() > force_threshold_;
       }
-      if (support_enable_ && active_contact_in_support && contact.type == contact.locomotion) {
+      if (support_enable_ && active_contact_in_support &&
+          contact.type == contact.locomotion) {
         support.push_back(contact_pos);
       }
     }
@@ -739,8 +747,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     Eigen::Vector3d cone_dir(contact.surface_normal.x, contact.surface_normal.y,
                              contact.surface_normal.z);
     friction_mu_ = contact.friction_coefficient;
-    if (cone_enable_ && active_contact_in_cone &&
-        cone_dir.norm() != 0 && friction_mu_ != 0) {
+    if (cone_enable_ && active_contact_in_cone && cone_dir.norm() != 0 &&
+        friction_mu_ != 0) {
       Eigen::Vector3d cone_ref_dir = -Eigen::Vector3d::UnitY();
       Eigen::Quaterniond cone_q;
       cone_q.setFromTwoVectors(cone_ref_dir, cone_dir);
