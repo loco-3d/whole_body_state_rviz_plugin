@@ -56,8 +56,8 @@ void PolygonVisual::setVertices(std::vector<Ogre::Vector3> &vertices) {
     for (unsigned int i = current_it; i < num_vertex - 1; i++) {
       // We create the line object within the frame node so that we can
       // set its position and direction relative to its header frame.
-      line_[counter].reset(
-          new whole_body_state_rviz_plugin::LineVisual(scene_manager_, frame_node_));
+      line_[counter].reset(new whole_body_state_rviz_plugin::LineVisual(
+          scene_manager_, frame_node_));
 
       line_[counter]->setArrow(vertices[current_it], vertices[i + 1]);
 

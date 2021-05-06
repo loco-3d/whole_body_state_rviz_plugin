@@ -15,6 +15,8 @@
   <build_depend>rviz</build_depend>
   <build_depend>whole_body_state_msgs</build_depend>
   <build_depend>pinocchio</build_depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>whole_body_state_msgs</exec_depend>

@@ -474,7 +474,8 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
       return;
     }
 
-    const whole_body_state_msgs::WholeBodyState &state = msg_->trajectory.back();
+    const whole_body_state_msgs::WholeBodyState &state =
+        msg_->trajectory.back();
     Eigen::VectorXd q = Eigen::VectorXd::Zero(model_.nq);
     q(3) = state.centroidal.base_orientation.x;
     q(4) = state.centroidal.base_orientation.y;
@@ -684,7 +685,8 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
       const whole_body_state_msgs::WholeBodyState &state = msg_->trajectory[i];
       std::size_t n_contacts = state.contacts.size();
       for (std::size_t k = 0; k < n_contacts; ++k) {
-        whole_body_state_msgs::ContactState contact = msg_->trajectory[i].contacts[k];
+        whole_body_state_msgs::ContactState contact =
+            msg_->trajectory[i].contacts[k];
         if (contact_traj_id.find(contact.name) ==
             contact_traj_id.end()) { // a new swing trajectory
           contact_traj_id[contact.name] = n_traj;
@@ -770,7 +772,8 @@ void WholeBodyTrajectoryDisplay::processContactTrajectory() {
         std::size_t traj_id = traj_it->second;
         std::size_t id = contact_vec_id.find(traj_id)->second;
         if (id < n_contacts) {
-          const whole_body_state_msgs::ContactState &contact = state.contacts[id];
+          const whole_body_state_msgs::ContactState &contact =
+              state.contacts[id];
           Ogre::Vector3 contact_position;
           Ogre::Quaternion contact_orientation;
           contact_position.x = contact.pose.position.x;

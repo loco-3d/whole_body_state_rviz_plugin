@@ -19,6 +19,12 @@ IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 ENDIF()
 
+# C++14 (Kinetic+)
+IF(CMAKE_CXX_STANDARD GREATER 14)
+  MESSAGE(WARNING "OGRE cannot be built with C++17 or higher. Force setting C++14.")
+  SET(CMAKE_CXX_STANDARD 14)
+ENDIF()
+
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
   whole_body_state_msgs
   roscpp
@@ -69,10 +75,7 @@ catkin_package(
   CATKIN_DEPENDS)
 
 
-INCLUDE_DIRECTORIES(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${pinocchio_INCLUDE_DIRS})
-LINK_DIRECTORIES(${catkin_LIBRARY_DIRS}
-                 ${Boost_LIBRARY_DIRS})
-                 
+INCLUDE_DIRECTORIES(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})            
 
 SET(SOURCE_FILES
   src/PointVisual.cpp
@@ -89,9 +92,8 @@ ADD_LIBRARY(${PROJECT_NAME}  ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}  ${QT_LIBRARIES}
                                        ${Boost_LIBRARIES}
                                        ${catkin_LIBRARIES}
-                                       ${pinocchio_LIBRARIES})
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-ignored-attributes)  # Silence Eigen::Tensor warnings
-# ADD_DEPENDENCIES(${PROJECT_NAME}  ${state_msgs_EXPORTED_TARGETS})
+                                       pinocchio::pinocchio)
+#TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wno-ignored-attributes)  # Silence Eigen::Tensor warnings
 
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/plugin_description.xml DESTINATION share/${PROJECT_NAME})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)

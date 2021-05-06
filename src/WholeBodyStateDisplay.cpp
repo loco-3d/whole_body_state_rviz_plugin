@@ -1,7 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2020, University of Edinburgh, Istituto Italiano di Tecnologia
+// Copyright (C) 2020-2021, University of Edinburgh, Istituto Italiano di
+// Tecnologia, University of Oxford.
 // Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,10 +27,10 @@ void linkUpdaterStatusFunction(rviz::StatusLevel level,
 }
 
 WholeBodyStateDisplay::WholeBodyStateDisplay()
-    : is_info_(false), initialized_model_(false), force_threshold_(0.),
-      weight_(0.), gravity_(9.81), com_real_(true), com_enable_(true),
-      cop_enable_(true), icp_enable_(true), cmp_enable_(true),
-      grf_enable_(true), support_enable_(true), cone_enable_(true) {
+    : initialized_model_(false), force_threshold_(0.), weight_(0.),
+      gravity_(9.81), com_real_(true), com_enable_(true), cop_enable_(true),
+      icp_enable_(true), cmp_enable_(true), grf_enable_(true),
+      support_enable_(true), cone_enable_(true) {
   // Category Groups
   robot_category_ = new rviz::Property("Robot", QVariant(), "", this);
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
@@ -246,10 +247,20 @@ void WholeBodyStateDisplay::onDisable() {
   MFDClass::onDisable();
   robot_->setVisible(false);
   clearRobotModel();
+  // Remove all artefacts:
+  com_visual_.reset();
+  comd_visual_.reset();
+  cop_visual_.reset();
+  icp_visual_.reset();
+  cmp_visual_.reset();
+  grf_visual_.clear();
+  support_visual_.reset();
+  cones_visual_.clear();
+  context_->queueRender();
 }
 
 void WholeBodyStateDisplay::fixedFrameChanged() {
-  if (is_info_) {
+  if (msg_ != nullptr) {
     processWholeBodyState();
   }
 }
@@ -293,8 +304,17 @@ void WholeBodyStateDisplay::loadRobotModel() {
   }
 
   // Initializing the dynamics from the URDF model
-  pinocchio::urdf::buildModelFromXML(robot_model_,
-                                     pinocchio::JointModelFreeFlyer(), model_);
+  try {
+    pinocchio::urdf::buildModelFromXML(
+        robot_model_, pinocchio::JointModelFreeFlyer(), model_);
+  } catch (const std::invalid_argument &e) {
+    std::string error_msg = "Failed to instantiate model: ";
+    error_msg += e.what();
+    setStatus(StatusProperty::Error, "Pinocchio-URDFParser",
+              QString::fromStdString(error_msg));
+    ROS_ERROR_STREAM(error_msg); // This message is potentially quite detailed.
+    return;
+  }
   data_ = pinocchio::Data(model_);
   gravity_ = model_.gravity.linear().norm();
   weight_ = pinocchio::computeTotalMass(model_) * gravity_;
@@ -543,8 +563,7 @@ void WholeBodyStateDisplay::updateFrictionConeGeometry() {
 void WholeBodyStateDisplay::processMessage(
     const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) {
   msg_ = msg;
-  is_info_ = true;
-  processWholeBodyState();
+  has_new_msg_ = true;
 }
 
 void WholeBodyStateDisplay::processWholeBodyState() {
@@ -634,7 +653,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       }
     }
 
-    // Building the support polygone
+    // Building the support polygon
     if (for_dir.norm() > force_threshold_ && std::isfinite(contact_pos.x) &&
         std::isfinite(contact_pos.y) && std::isfinite(contact_pos.z)) {
       Eigen::Quaterniond for_q;
@@ -838,7 +857,15 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   }
 }
 
+void WholeBodyStateDisplay::update(float wall_dt, float /*ros_dt*/) {
+  if (has_new_msg_) {
+    processWholeBodyState();
+    has_new_msg_ = false;
+  }
+}
+
 } // namespace whole_body_state_rviz_plugin
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(whole_body_state_rviz_plugin::WholeBodyStateDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(whole_body_state_rviz_plugin::WholeBodyStateDisplay,
+                       rviz::Display)

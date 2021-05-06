@@ -34,6 +34,12 @@ All visuals are configurable through Rviz GUI. For example, the user can configu
 	catkin build #catkin_make
     ```
 
+## Formatting
+Run the following in the root of the project:
+```
+clang-format-6.0 -i $(find . -path ./cmake -prune -o -iregex '.*\.\(h\|c\|hh\|cc\|hpp\|cpp\|hxx\|cxx\)$' -print)
+```
+
 ## :copyright: Credits
 
 ### :writing_hand: Written by
