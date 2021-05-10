@@ -30,6 +30,11 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   roscpp
   rviz)
 
+# Ensure version of whole_body_state_msgs is at least 1.0.0
+IF(NOT ${whole_body_state_msgs_VERSION} VERSION_GREATER "0.9.99")
+  MESSAGE(FATAL_ERROR "whole_body_state_msgs version 1.0.0 or greater required.")
+ENDIF()
+
 FIND_PACKAGE(Boost REQUIRED COMPONENTS system)
 
 FIND_PACKAGE(pinocchio REQUIRED)
