@@ -665,11 +665,11 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     // Updating the center of pressure
     bool active_contact_in_cop = false;
     if (use_contact_status_in_cop_) {
-      active_contact_in_cop = contact.contact_state == contact.ACTIVE;
+      active_contact_in_cop = contact.status == contact.ACTIVE;
     } else {
       active_contact_in_cop = for_dir.norm() > force_threshold_;
     }
-    if (contact.type == contact.locomotion && active_contact_in_cop) {
+    if (contact.type == contact.LOCOMOTION && active_contact_in_cop) {
       cop_pos +=
           contact.wrench.force.z * Eigen::Vector3d(contact.pose.position.x,
                                                    contact.pose.position.y,
@@ -695,7 +695,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       // one and stores it in the vector
       bool active_contact_in_grf = false;
       if (use_contact_status_in_grf_) {
-        active_contact_in_grf = contact.contact_state == contact.ACTIVE;
+        active_contact_in_grf = contact.status == contact.ACTIVE;
       } else {
         active_contact_in_grf = for_dir.norm() > force_threshold_;
       }
@@ -727,12 +727,12 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
       bool active_contact_in_support = false;
       if (use_contact_status_in_support_) {
-        active_contact_in_support = contact.contact_state == contact.ACTIVE;
+        active_contact_in_support = contact.status == contact.ACTIVE;
       } else {
         active_contact_in_support = for_dir.norm() > force_threshold_;
       }
       if (support_enable_ && active_contact_in_support &&
-          contact.type == contact.locomotion) {
+          contact.type == contact.LOCOMOTION) {
         support.push_back(contact_pos);
       }
     }
@@ -740,7 +740,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     // Building the friction cones
     bool active_contact_in_cone = false;
     if (use_contact_status_in_friction_cone_) {
-      active_contact_in_cone = contact.contact_state == contact.ACTIVE;
+      active_contact_in_cone = contact.status == contact.ACTIVE;
     } else {
       active_contact_in_cone = for_dir.norm() > force_threshold_;
     }
