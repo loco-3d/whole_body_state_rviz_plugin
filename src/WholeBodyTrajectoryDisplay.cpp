@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2020, University of Edinburgh, Istituto Italiano di Tecnologia
-// Copyright note valid unless otherwise stated in individual files.
+// Copyright (C) 2020-2021, University of Edinburgh, Istituto Italiano di
+// Tecnologia Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +29,7 @@ void linkUpdaterStatusFunction(rviz::StatusLevel level,
 }
 
 WholeBodyTrajectoryDisplay::WholeBodyTrajectoryDisplay()
-    : is_info_(false), weight_(0.), target_enable_(true), com_enable_(true),
+    : has_new_msg_(false), weight_(0.), target_enable_(true), com_enable_(true),
       com_axes_enable_(true), contact_enable_(true),
       contact_axes_enable_(true) {
   // Category Groups
@@ -164,10 +164,21 @@ void WholeBodyTrajectoryDisplay::onEnable() {
 void WholeBodyTrajectoryDisplay::onDisable() {
   robot_->setVisible(false);
   clearRobotModel();
+  // Remove all artefacts:
+  com_manual_object_.reset();
+  com_billboard_line_.reset();
+  com_points_.clear();
+  com_axes_.clear();
+  contact_manual_object_.clear();
+  contact_billboard_line_.clear();
+  contact_points_.clear();
+  contact_axes_.clear();
+  force_visual_.clear();
+  context_->queueRender();
 }
 
 void WholeBodyTrajectoryDisplay::fixedFrameChanged() {
-  if (is_info_) {
+  if (msg_ != nullptr) {
     // Visualization of the base trajectory
     processCoMTrajectory();
     // Visualization of the end-effector trajectory
@@ -196,7 +207,7 @@ void WholeBodyTrajectoryDisplay::updateCoMStyle() {
     com_billboard_line_.reset();
     break;
   }
-  if (is_info_) {
+  if (msg_ != nullptr) {
     processCoMTrajectory();
   }
 }
@@ -313,7 +324,7 @@ void WholeBodyTrajectoryDisplay::updateCoMLineProperties() {
     }
   } else if (style == LINES) {
     // we have to process again the base trajectory
-    if (is_info_)
+    if (msg_ != nullptr)
       processCoMTrajectory();
   } else {
     std::size_t n_points = com_points_.size();
@@ -377,7 +388,7 @@ void WholeBodyTrajectoryDisplay::updateContactStyle() {
       contact_billboard_line_[i].reset();
     }
   }
-  if (is_info_) {
+  if (msg_ != nullptr) {
     processContactTrajectory();
   }
 }
@@ -417,7 +428,7 @@ void WholeBodyTrajectoryDisplay::updateContactLineProperties() {
     }
   } else if (style == LINES) {
     // we have to process again the contact trajectory
-    if (is_info_)
+    if (msg_ != nullptr)
       processContactTrajectory();
   } else {
     std::size_t n_points = contact_points_.size();
@@ -452,15 +463,21 @@ void WholeBodyTrajectoryDisplay::processMessage(
     const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg) {
   // Updating the message
   msg_ = msg;
-  is_info_ = true;
-  // Destroy all the old elements
-  destroyObjects();
-  // Visualization of the base trajectory
-  processTargetPosture();
-  // Visualization of the base trajectory
-  processCoMTrajectory();
-  // Visualization of the end-effector trajectory
-  processContactTrajectory();
+  has_new_msg_ = true;
+}
+
+void WholeBodyTrajectoryDisplay::update(float wall_dt, float /*ros_dt*/) {
+  if (has_new_msg_) {
+    // Destroy all the old elements
+    destroyObjects();
+    // Visualization of the base trajectory
+    processTargetPosture();
+    // Visualization of the base trajectory
+    processCoMTrajectory();
+    // Visualization of the end-effector trajectory
+    processContactTrajectory();
+    has_new_msg_ = false;
+  }
 }
 
 void WholeBodyTrajectoryDisplay::processTargetPosture() {
@@ -881,8 +898,17 @@ void WholeBodyTrajectoryDisplay::loadRobotModel() {
     setStatus(StatusProperty::Error, "URDF", "Failed to parse URDF model");
     return;
   }
-  pinocchio::urdf::buildModelFromXML(robot_description_,
-                                     pinocchio::JointModelFreeFlyer(), model_);
+  try {
+    pinocchio::urdf::buildModelFromXML(
+        robot_description_, pinocchio::JointModelFreeFlyer(), model_);
+  } catch (const std::invalid_argument &e) {
+    std::string error_msg = "Failed to instantiate model: ";
+    error_msg += e.what();
+    setStatus(StatusProperty::Error, "Pinocchio-URDFParser",
+              QString::fromStdString(error_msg));
+    ROS_ERROR_STREAM(error_msg); // This message is potentially quite detailed.
+    return;
+  }
   data_ = pinocchio::Data(model_);
   double gravity = model_.gravity.linear().norm();
   weight_ = pinocchio::computeTotalMass(model_) * gravity;

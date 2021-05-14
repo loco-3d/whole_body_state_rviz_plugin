@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2020, University of Edinburgh, Istituto Italiano di Tecnologia
-// Copyright note valid unless otherwise stated in individual files.
+// Copyright (C) 2020-2021, University of Edinburgh, Istituto Italiano di
+// Tecnologia Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -80,6 +80,9 @@ public:
   void processMessage(
       const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg) override;
 
+  /** @brief render callback */
+  void update(float wall_dt, float ros_dt) override;
+
 private Q_SLOTS:
   /**@{*/
   /** Helper functions to apply color and alpha to all visuals.
@@ -123,8 +126,8 @@ private:
   /** @brief Whole-body trajectory message */
   whole_body_state_msgs::WholeBodyTrajectory::ConstPtr msg_;
 
-  /** @brief Indicates if it's been received a message */
-  bool is_info_;
+  bool has_new_msg_; ///< Callback sets this to tell our update function
+                     ///< it needs to update the model
 
   /**@{*/
   /** Properties to show on side panel */
