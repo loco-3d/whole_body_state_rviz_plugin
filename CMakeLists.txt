@@ -3,11 +3,11 @@ project(whole_body_state_rviz_plugin)
 
 # Set up project properties
 SET(PROJECT_NAME whole_body_state_rviz_plugin)
-SET(PROJECT_DESCRIPTION "State rviz plugin")
+SET(PROJECT_DESCRIPTION "Whole-body state rviz plugin")
 
 # Print initial message (STATUS to avoid triggering warnings)
 MESSAGE(STATUS "${PROJECT_DESCRIPTION}, version ${PROJECT_VERSION}")
-MESSAGE(STATUS "Copyright (C) 2020 University of Edinburgh, Istituto Italiano di Tecnologia")
+MESSAGE(STATUS "Copyright (C) 2020-2021 University of Edinburgh, Istituto Italiano di Tecnologia, University of Oxford")
 MESSAGE(STATUS "All rights reserved.")
 MESSAGE(STATUS "Released under the BSD 3-Clause License.")
 

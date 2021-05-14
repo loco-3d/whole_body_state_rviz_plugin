@@ -27,7 +27,7 @@ void linkUpdaterStatusFunction(rviz::StatusLevel level,
 }
 
 WholeBodyStateDisplay::WholeBodyStateDisplay()
-    : initialized_model_(false), force_threshold_(0.),
+    : has_new_msg_(false), initialized_model_(false), force_threshold_(0.),
       use_contact_status_in_cop_(true), use_contact_status_in_grf_(true),
       use_contact_status_in_support_(true),
       use_contact_status_in_friction_cone_(true), weight_(0.), gravity_(9.81),

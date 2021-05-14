@@ -112,8 +112,6 @@ private Q_SLOTS:
 
 private:
   void processWholeBodyState();
-  bool has_new_msg_ = false; ///< Callback sets this to tell our update function
-                             ///< it needs to update the model
 
   /** @brief Loads a URDF from the ros-param named by our
    * "Robot Description" property, iterates through the links, and
@@ -126,6 +124,9 @@ private:
 
   /** @brief Whole-body state message */
   whole_body_state_msgs::WholeBodyState::ConstPtr msg_;
+
+  bool has_new_msg_; ///< Callback sets this to tell our update function
+                     ///< it needs to update the model
 
   /**@{*/
   /** Properties to show on side panel */
