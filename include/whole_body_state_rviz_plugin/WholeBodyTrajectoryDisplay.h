@@ -37,7 +37,7 @@ class BillboardLine;
 class VectorProperty;
 class Axes;
 
-} // namespace rviz
+}  // namespace rviz
 
 namespace whole_body_state_rviz_plugin {
 
@@ -45,11 +45,9 @@ namespace whole_body_state_rviz_plugin {
  * @class WholeBodyTrajectoryDisplay
  * @brief Displays a whole_body_state_msgs::WholeBodyTrajectory message
  */
-class WholeBodyTrajectoryDisplay
-    : public rviz::MessageFilterDisplay<
-          whole_body_state_msgs::WholeBodyTrajectory> {
+class WholeBodyTrajectoryDisplay : public rviz::MessageFilterDisplay<whole_body_state_msgs::WholeBodyTrajectory> {
   Q_OBJECT
-public:
+ public:
   /** @brief Constructor function */
   WholeBodyTrajectoryDisplay();
 
@@ -77,13 +75,12 @@ public:
    * @param const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr&
    * Whole-body trajectory msg
    */
-  void processMessage(
-      const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg) override;
+  void processMessage(const whole_body_state_msgs::WholeBodyTrajectory::ConstPtr &msg) override;
 
   /** @brief render callback */
   void update(float wall_dt, float ros_dt) override;
 
-private Q_SLOTS:
+ private Q_SLOTS:
   /**@{*/
   /** Helper functions to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
@@ -100,13 +97,11 @@ private Q_SLOTS:
   void updateContactEnable();
   void updateContactStyle();
   void updateContactLineProperties();
-  void pushBackCoMAxes(const Ogre::Vector3 &axes_position,
-                       const Ogre::Quaternion &axes_orientation);
-  void pushBackContactAxes(const Ogre::Vector3 &axes_position,
-                           const Ogre::Quaternion &axes_orientation);
+  void pushBackCoMAxes(const Ogre::Vector3 &axes_position, const Ogre::Quaternion &axes_orientation);
+  void pushBackContactAxes(const Ogre::Vector3 &axes_position, const Ogre::Quaternion &axes_orientation);
   /**@}*/
 
-private:
+ private:
   /**@{*/
   /** Process the trajectories */
   void processTargetPosture();
@@ -126,8 +121,8 @@ private:
   /** @brief Whole-body trajectory message */
   whole_body_state_msgs::WholeBodyTrajectory::ConstPtr msg_;
 
-  bool has_new_msg_; ///< Callback sets this to tell our update function
-                     ///< it needs to update the model
+  bool has_new_msg_;  ///< Callback sets this to tell our update function
+                      ///< it needs to update the model
 
   /**@{*/
   /** Properties to show on side panel */
@@ -199,6 +194,6 @@ private:
   /**@}*/
 };
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin
 
-#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H
+#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_TRAJECTORY_DISPLAY_H

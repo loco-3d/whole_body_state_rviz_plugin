@@ -18,29 +18,24 @@
 namespace whole_body_state_rviz_plugin {
 
 class PinocchioLinkUpdater : public rviz::LinkUpdater {
-public:
-  typedef boost::function<void(rviz::StatusLevel, const std::string &,
-                               const std::string &)>
-      StatusCallback;
+ public:
+  typedef boost::function<void(rviz::StatusLevel, const std::string &, const std::string &)> StatusCallback;
 
-  PinocchioLinkUpdater(pinocchio::Model &model, pinocchio::Data &data,
-                       const Eigen::Ref<const Eigen::VectorXd> &q,
+  PinocchioLinkUpdater(pinocchio::Model &model, pinocchio::Data &data, const Eigen::Ref<const Eigen::VectorXd> &q,
                        const StatusCallback &status_cb = StatusCallback());
 
-  bool getLinkTransforms(
-      const std::string &link_name, Ogre::Vector3 &visual_position,
-      Ogre::Quaternion &visual_orientation, Ogre::Vector3 &collision_position,
-      Ogre::Quaternion &collision_orientation) const override;
+  bool getLinkTransforms(const std::string &link_name, Ogre::Vector3 &visual_position,
+                         Ogre::Quaternion &visual_orientation, Ogre::Vector3 &collision_position,
+                         Ogre::Quaternion &collision_orientation) const override;
 
-  void setLinkStatus(rviz::StatusLevel level, const std::string &link_name,
-                     const std::string &text) const override;
+  void setLinkStatus(rviz::StatusLevel level, const std::string &link_name, const std::string &text) const override;
 
-private:
+ private:
   pinocchio::Model &model_;
   pinocchio::Data &data_;
   StatusCallback status_callback_;
 };
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin
 
-#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H
+#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_PINOCCHIO_LINK_UPDATER_H

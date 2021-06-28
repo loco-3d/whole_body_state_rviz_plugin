@@ -15,8 +15,7 @@
 
 namespace whole_body_state_rviz_plugin {
 
-PolygonVisual::PolygonVisual(Ogre::SceneManager *scene_manager,
-                             Ogre::SceneNode *parent_node) {
+PolygonVisual::PolygonVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node) {
   scene_manager_ = scene_manager;
 
   // Ogre::SceneNode s form a tree, with each node storing the transform
@@ -45,8 +44,7 @@ void PolygonVisual::setVertices(std::vector<Ogre::Vector3> &vertices) {
   // Visualization of the lines
   line_.clear();
   unsigned int num_line = 0;
-  for (unsigned int i = 1; i < num_vertex; i++)
-    num_line += num_vertex - i;
+  for (unsigned int i = 1; i < num_vertex; i++) num_line += num_vertex - i;
   line_.resize(num_line);
 
   unsigned int counter = 0;
@@ -56,8 +54,7 @@ void PolygonVisual::setVertices(std::vector<Ogre::Vector3> &vertices) {
     for (unsigned int i = current_it; i < num_vertex - 1; i++) {
       // We create the line object within the frame node so that we can
       // set its position and direction relative to its header frame.
-      line_[counter].reset(new whole_body_state_rviz_plugin::LineVisual(
-          scene_manager_, frame_node_));
+      line_[counter].reset(new whole_body_state_rviz_plugin::LineVisual(scene_manager_, frame_node_));
 
       line_[counter]->setArrow(vertices[current_it], vertices[i + 1]);
 
@@ -74,13 +71,11 @@ void PolygonVisual::setVertices(std::vector<Ogre::Vector3> &vertices) {
 
     // Adding the vertices
     Ogre::Vector3 normal(0., 0., 1.);
-    for (unsigned int i = 0; i < num_vertex; ++i)
-      mesh_->addVertex(vertices[i], normal);
+    for (unsigned int i = 0; i < num_vertex; ++i) mesh_->addVertex(vertices[i], normal);
 
     // Adding the actual triangle
     for (unsigned int i = 0; i < num_vertex; i++) {
-      mesh_->addTriangle(i % num_vertex, (i + 1) % num_vertex,
-                         (i + 2) % num_vertex);
+      mesh_->addTriangle(i % num_vertex, (i + 1) % num_vertex, (i + 2) % num_vertex);
     }
     mesh_->endTriangles();
   }
@@ -103,9 +98,7 @@ void PolygonVisual::setLineColor(float r, float g, float b, float a) {
   }
 }
 
-void PolygonVisual::setMeshColor(float r, float g, float b, float a) {
-  mesh_->setColor(r, g, b, a);
-}
+void PolygonVisual::setMeshColor(float r, float g, float b, float a) { mesh_->setColor(r, g, b, a); }
 
 void PolygonVisual::setLineRadius(float radius) {
   unsigned int num_line = line_.size();
@@ -114,4 +107,4 @@ void PolygonVisual::setLineRadius(float radius) {
   }
 }
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin

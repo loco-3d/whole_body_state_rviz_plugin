@@ -16,13 +16,12 @@
 namespace Ogre {
 class Vector3;
 class Quaternion;
-} // namespace Ogre
+}  // namespace Ogre
 
 namespace whole_body_state_rviz_plugin {
 
 struct Triangle {
-  Triangle(unsigned int _v1, unsigned int _v2, unsigned int _v3)
-      : v1(_v1), v2(_v2), v3(_v3) {}
+  Triangle(unsigned int _v1, unsigned int _v2, unsigned int _v3) : v1(_v1), v2(_v2), v3(_v3) {}
 
   unsigned int v1;
   unsigned int v2;
@@ -36,14 +35,13 @@ struct Triangle {
  * polygons data. Currently it just shows a set of polygons
  */
 class PolygonVisual {
-public:
+ public:
   /**
    * @brief Constructor that creates the visual stuff and puts it into the scene
    * @param scene_manager  Manager the organization and rendering of the scene
    * @param parent_node    Represent the arrow as node in the scene
    */
-  PolygonVisual(Ogre::SceneManager *scene_manager,
-                Ogre::SceneNode *parent_node);
+  PolygonVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
 
   /** @brief Destructor that removes the visual stuff from the scene */
   ~PolygonVisual();
@@ -90,13 +88,12 @@ public:
    */
   void setLineRadius(float scale);
 
-private:
+ private:
   /** @brief The object implementing the polygon mesh */
   boost::shared_ptr<rviz::MeshShape> mesh_;
 
   /** @brief The object implementing the lines */
-  std::vector<boost::shared_ptr<whole_body_state_rviz_plugin::LineVisual>>
-      line_;
+  std::vector<boost::shared_ptr<whole_body_state_rviz_plugin::LineVisual>> line_;
 
   /** @brief A SceneNode whose pose is set to match the coordinate frame */
   Ogre::SceneNode *frame_node_;
@@ -107,6 +104,6 @@ private:
   Ogre::SceneManager *scene_manager_;
 };
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin
 
-#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H
+#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_POLYGON_VISUAL_H
