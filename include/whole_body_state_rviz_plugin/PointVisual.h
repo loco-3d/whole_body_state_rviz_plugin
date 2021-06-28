@@ -12,7 +12,7 @@
 namespace Ogre {
 class Vector3;
 class Quaternion;
-} // namespace Ogre
+}  // namespace Ogre
 
 namespace rviz {
 class Shape;
@@ -27,7 +27,7 @@ namespace whole_body_state_rviz_plugin {
  * Ogre::Vector3 data. Currently it just shows a sphere in the point position
  */
 class PointVisual {
-public:
+ public:
   /**
    * @brief Constructor that creates the visual stuff and puts it into the scene
    * @param scene_manager  Manager the organization and rendering of the scene
@@ -71,7 +71,7 @@ public:
    */
   void setRadius(float r);
 
-private:
+ private:
   /** @brief The object implementing the point circle */
   rviz::Shape *point_;
 
@@ -87,6 +87,6 @@ private:
   float radius_;
 };
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin
 
-#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_POINT_VISUAL_H
+#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_POINT_VISUAL_H

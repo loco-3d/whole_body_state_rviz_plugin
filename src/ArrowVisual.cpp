@@ -16,8 +16,7 @@
 
 namespace whole_body_state_rviz_plugin {
 
-ArrowVisual::ArrowVisual(Ogre::SceneManager *scene_manager,
-                         Ogre::SceneNode *parent_node) {
+ArrowVisual::ArrowVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node) {
   scene_manager_ = scene_manager;
 
   // Ogre::SceneNode s form a tree, with each node storing the transform
@@ -40,26 +39,20 @@ ArrowVisual::~ArrowVisual() {
   scene_manager_->destroySceneNode(frame_node_);
 }
 
-void ArrowVisual::setArrow(const Ogre::Vector3 &position,
-                           const Ogre::Quaternion &orientation) {
+void ArrowVisual::setArrow(const Ogre::Vector3 &position, const Ogre::Quaternion &orientation) {
   arrow_->setPosition(position);
   arrow_->setOrientation(orientation);
 }
 
-void ArrowVisual::setFramePosition(const Ogre::Vector3 &position) {
-  frame_node_->setPosition(position);
-}
+void ArrowVisual::setFramePosition(const Ogre::Vector3 &position) { frame_node_->setPosition(position); }
 
 void ArrowVisual::setFrameOrientation(const Ogre::Quaternion &orientation) {
   frame_node_->setOrientation(orientation);
 }
 
-void ArrowVisual::setColor(float r, float g, float b, float a) {
-  arrow_->setColor(r, g, b, a);
-}
+void ArrowVisual::setColor(float r, float g, float b, float a) { arrow_->setColor(r, g, b, a); }
 
-void ArrowVisual::setProperties(float shaft_length, float shaft_diameter,
-                                float head_length, float head_diameter) {
+void ArrowVisual::setProperties(float shaft_length, float shaft_diameter, float head_length, float head_diameter) {
   if (!std::isfinite(shaft_length)) {
     ROS_WARN_STREAM("Shaft length is not finite: " << shaft_length);
     return;
@@ -79,4 +72,4 @@ void ArrowVisual::setProperties(float shaft_length, float shaft_diameter,
   arrow_->set(shaft_length, shaft_diameter, head_length, head_diameter);
 }
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin

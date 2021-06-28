@@ -15,7 +15,7 @@
 namespace Ogre {
 class Vector3;
 class Quaternion;
-} // namespace Ogre
+}  // namespace Ogre
 
 namespace rviz {
 class Arrow;
@@ -31,7 +31,7 @@ namespace whole_body_state_rviz_plugin {
  * the initial and final points
  */
 class LineVisual {
-public:
+ public:
   /**
    * @brief Constructor that creates the visual stuff and puts it into the scene
    * @param scene_manager  Manager the organization and rendering of the scene
@@ -47,8 +47,7 @@ public:
    * @param initial_point  Initial point of the line
    * @param final_point    Final point of the line
    */
-  void setArrow(const Ogre::Vector3 &initial_point,
-                const Ogre::Vector3 &final_point);
+  void setArrow(const Ogre::Vector3 &initial_point, const Ogre::Vector3 &final_point);
 
   /**
    * @brief Set the position of the coordinate frame
@@ -77,10 +76,9 @@ public:
    * @param head_length     Length of the arrow's head
    * @param head_diameter   Diameter of the arrow's head
    */
-  void setProperties(float shaft_diameter, float head_length = 0.,
-                     float head_diameter = 0.);
+  void setProperties(float shaft_diameter, float head_length = 0., float head_diameter = 0.);
 
-private:
+ private:
   /** @brief The object implementing the arrow */
   rviz::Arrow *arrow_;
 
@@ -96,6 +94,6 @@ private:
   float distance_;
 };
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin
 
-#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_LINE_VISUAL_H
+#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_LINE_VISUAL_H

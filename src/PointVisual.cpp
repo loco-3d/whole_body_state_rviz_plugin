@@ -15,9 +15,7 @@
 
 namespace whole_body_state_rviz_plugin {
 
-PointVisual::PointVisual(Ogre::SceneManager *scene_manager,
-                         Ogre::SceneNode *parent_node)
-    : radius_(0.) {
+PointVisual::PointVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node) : radius_(0.) {
   scene_manager_ = scene_manager;
 
   // Ogre::SceneNode s form a tree, with each node storing the transform
@@ -49,18 +47,14 @@ void PointVisual::setPoint(const Ogre::Vector3 &point) {
   point_->setPosition(point);
 }
 
-void PointVisual::setFramePosition(const Ogre::Vector3 &position) {
-  frame_node_->setPosition(position);
-}
+void PointVisual::setFramePosition(const Ogre::Vector3 &position) { frame_node_->setPosition(position); }
 
 void PointVisual::setFrameOrientation(const Ogre::Quaternion &orientation) {
   frame_node_->setOrientation(orientation);
 }
 
-void PointVisual::setColor(float r, float g, float b, float a) {
-  point_->setColor(r, g, b, a);
-}
+void PointVisual::setColor(float r, float g, float b, float a) { point_->setColor(r, g, b, a); }
 
 void PointVisual::setRadius(float r) { radius_ = r; }
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin

@@ -23,6 +23,7 @@
 #include "whole_body_state_rviz_plugin/ArrowVisual.h"
 #include "whole_body_state_rviz_plugin/PointVisual.h"
 #include "whole_body_state_rviz_plugin/PolygonVisual.h"
+#include "whole_body_state_rviz_plugin/ConeVisual.h"
 
 namespace Ogre {
 class SceneNode;
@@ -35,7 +36,7 @@ class ColorProperty;
 class FloatProperty;
 class IntProperty;
 class Shape;
-} // namespace rviz
+}  // namespace rviz
 
 namespace whole_body_state_rviz_plugin {
 
@@ -43,10 +44,9 @@ namespace whole_body_state_rviz_plugin {
  * @class WholeBodyStateDisplay
  * @brief Displays a whole_body_state_msgs::WholeBodyState message
  */
-class WholeBodyStateDisplay
-    : public rviz::MessageFilterDisplay<whole_body_state_msgs::WholeBodyState> {
+class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state_msgs::WholeBodyState> {
   Q_OBJECT
-public:
+ public:
   /** @brief Constructor function */
   WholeBodyStateDisplay();
 
@@ -74,13 +74,12 @@ public:
    * @param const whole_body_state_msgs::WholeBodyState::ConstPtr& Whole-body
    * state msg
    */
-  void processMessage(
-      const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) override;
+  void processMessage(const whole_body_state_msgs::WholeBodyState::ConstPtr &msg) override;
 
   /** @brief render callback */
   void update(float wall_dt, float ros_dt) override;
 
-private Q_SLOTS:
+ private Q_SLOTS:
   /**@{*/
   /** Helper function to apply color and alpha to all visuals.
    * Set the current color and alpha values for each visual */
@@ -110,7 +109,7 @@ private Q_SLOTS:
   void updateFrictionConeGeometry();
   /**@}*/
 
-private:
+ private:
   void processWholeBodyState();
 
   /** @brief Loads a URDF from the ros-param named by our
@@ -125,8 +124,8 @@ private:
   /** @brief Whole-body state message */
   whole_body_state_msgs::WholeBodyState::ConstPtr msg_;
 
-  bool has_new_msg_; ///< Callback sets this to tell our update function
-                     ///< it needs to update the model
+  bool has_new_msg_;  ///< Callback sets this to tell our update function
+                      ///< it needs to update the model
 
   /**@{*/
   /** Properties to show on side panel */
@@ -150,7 +149,7 @@ private:
   boost::shared_ptr<PointVisual> icp_visual_;
   std::vector<boost::shared_ptr<ArrowVisual>> grf_visual_;
   boost::shared_ptr<PolygonVisual> support_visual_;
-  std::vector<boost::shared_ptr<rviz::Shape>> cones_visual_;
+  std::vector<boost::shared_ptr<ConeVisual>> cones_visual_;
   /**@}*/
 
   /**@{*/
@@ -211,7 +210,7 @@ private:
   bool initialized_model_;
   pinocchio::Model model_;
   pinocchio::Data data_;
-  double force_threshold_; //!< Force threshold for detecting active contacts
+  double force_threshold_;  //!< Force threshold for detecting active contacts
   bool use_contact_status_in_cop_;
   bool use_contact_status_in_grf_;
   bool use_contact_status_in_support_;
@@ -221,9 +220,9 @@ private:
   double friction_mu_;
   /**@}*/
 
-  enum CoMStyle { REAL, PROJECTED }; //!< CoM visualization style
-  bool com_real_; //!< Label to indicates the type of CoM display (real or
-                  //!< projected)
+  enum CoMStyle { REAL, PROJECTED };  //!< CoM visualization style
+  bool com_real_;                     //!< Label to indicates the type of CoM display (real or
+                                      //!< projected)
 
   /**@{*/
   /** Flag that indicates if the category are enable */
@@ -238,6 +237,6 @@ private:
   /**@}*/
 };
 
-} // namespace whole_body_state_rviz_plugin
+}  // namespace whole_body_state_rviz_plugin
 
-#endif // WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H
+#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_WHOLE_BODY_STATE_DISPLAY_H

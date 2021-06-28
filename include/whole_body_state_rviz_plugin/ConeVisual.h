@@ -1,13 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2020-2021, University of Edinburgh, Istituto Italiano di Tecnologia
+// Copyright (C) 2021, University of Edinburgh
 // Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
-#define WHOLE_BODY_STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
+#ifndef WHOLE_BODY_STATE_RVIZ_PLUGIN_CONE_VISUAL_H
+#define WHOLE_BODY_STATE_RVIZ_PLUGIN_CONE_VISUAL_H
 
 #include <rviz/properties/quaternion_property.h>
 
@@ -17,35 +17,35 @@ class Quaternion;
 }  // namespace Ogre
 
 namespace rviz {
-class Arrow;
+class Shape;
 }
 
 namespace whole_body_state_rviz_plugin {
 
 /**
- * @class ArrowVisual
- * @brief Visualizes 3d arrow
- * Each instance of ArrowVisual represents the visualization of a single arrow
- * data. Currently it just shows an arrow with a given direction and magnitude.
+ * @class ConeVisual
+ * @brief Visualizes 3d cone
+ * Each instance of ConeVisual represents the visualization of a single cone
+ * data. Currently it just shows a cone with a given direction, coefficient and magnitude.
  */
-class ArrowVisual {
+class ConeVisual {
  public:
   /**
    * @brief Constructor that creates the visual stuff and puts it into the scene
    * @param scene_manager  Manager the organization and rendering of the scene
-   * @param parent_node    Represent the arrow as node in the scene
+   * @param parent_node    Represent the cone as node in the scene
    */
-  ArrowVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
+  ConeVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
 
   /** @brief Destructor that removes the visual stuff from the scene */
-  ~ArrowVisual();
+  ~ConeVisual();
 
   /**
-   * @brief Configure the visual to show the arrow
-   * @param position     Arrow position
-   * @param orientation  Arrow orientation
+   * @brief Configure the visual to show the cone
+   * @param position     Cone position
+   * @param orientation  Cone orientation
    */
-  void setArrow(const Ogre::Vector3 &position, const Ogre::Quaternion &orientation);
+  void setCone(const Ogre::Vector3 &position, const Ogre::Quaternion &orientation);
 
   /**
    * @brief Set the position of the coordinate frame
@@ -69,17 +69,15 @@ class ArrowVisual {
   void setColor(float r, float g, float b, float a);
 
   /**
-   * @brief Set the parameters for this arrow
-   * @param shaft_length    Length of the arrow's shaft
-   * @param shaft_diameter  Diameter of the arrow's shaft
-   * @param head_length     Length of the arrow's head
-   * @param head_diameter   Diameter of the arrow's head
+   * @brief Set the parameters for this cone
+   * @param width    Cone width
+   * @param length  Cone length
    */
-  void setProperties(float shaft_length, float shaft_diameter, float head_length, float head_diameter);
+  void setProperties(float width, float length);
 
  private:
-  /** @brief The object implementing the arrow */
-  rviz::Arrow *arrow_;
+  /** @brief The object implementing the cone */
+  rviz::Shape *cone_;
 
   /** @brief A SceneNode whose pose is set to match the coordinate frame */
   Ogre::SceneNode *frame_node_;
@@ -92,4 +90,4 @@ class ArrowVisual {
 
 }  // namespace whole_body_state_rviz_plugin
 
-#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_ARROW_VISUAL_H
+#endif  // WHOLE_BODY_STATE_RVIZ_PLUGIN_CONE_VISUAL_H
