@@ -779,11 +779,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
   // Defining the center of mass as Ogre::Vector3
   Ogre::Vector3 com_point;
-  if (com_real_ || n_suppcontacts != 0) {
-    com_point.x = msg_->centroidal.com_position.x;
-    com_point.y = msg_->centroidal.com_position.y;
-    com_point.z = msg_->centroidal.com_position.z;
-  } else {
+  if (!com_real_ && n_suppcontacts != 0) {
     Eigen::Vector3d cop_z = Eigen::Vector3d::Zero();
     cop_z(2) = cop_pos(2);
     pinocchio::SE3::Quaternion q(msg_->centroidal.base_orientation.w,
@@ -794,6 +790,10 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     com_point.x = msg_->centroidal.com_position.x + rot_cop_z(0);
     com_point.y = msg_->centroidal.com_position.y + rot_cop_z(1);
     com_point.z = cop_z(2);
+  } else {
+    com_point.x = msg_->centroidal.com_position.x;
+    com_point.y = msg_->centroidal.com_position.y;
+    com_point.z = msg_->centroidal.com_position.z;
   }
 
   // Defining the center of mass velocity orientation
