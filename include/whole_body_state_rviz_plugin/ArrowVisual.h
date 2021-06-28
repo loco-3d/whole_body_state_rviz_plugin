@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2020, University of Edinburgh, Istituto Italiano di Tecnologia
+// Copyright (C) 2020-2021, University of Edinburgh, Istituto Italiano di Tecnologia
 // Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,8 +26,7 @@ namespace whole_body_state_rviz_plugin {
  * @class ArrowVisual
  * @brief Visualizes 3d arrow
  * Each instance of ArrowVisual represents the visualization of a single arrow
- * data. Currently it just shows an arrow with the direction and magnitude of
- * the acceleration vector
+ * data. Currently it just shows an arrow with a given direction and magnitude.
  */
 class ArrowVisual {
  public:
