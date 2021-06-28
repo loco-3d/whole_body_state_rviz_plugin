@@ -50,6 +50,7 @@ IF(rviz_QT_VERSION VERSION_LESS "5")
     include/whole_body_state_rviz_plugin/LineVisual.h
     include/whole_body_state_rviz_plugin/ArrowVisual.h
     include/whole_body_state_rviz_plugin/PolygonVisual.h
+    include/whole_body_state_rviz_plugin/ConeVisual.h
     include/whole_body_state_rviz_plugin/PinocchioLinkUpdater.h
     include/whole_body_state_rviz_plugin/WholeBodyStateDisplay.h
     include/whole_body_state_rviz_plugin/WholeBodyTrajectoryDisplay.h
@@ -65,6 +66,7 @@ ELSE()
     include/whole_body_state_rviz_plugin/LineVisual.h
     include/whole_body_state_rviz_plugin/ArrowVisual.h
     include/whole_body_state_rviz_plugin/PolygonVisual.h
+        include/whole_body_state_rviz_plugin/ConeVisual.h
     include/whole_body_state_rviz_plugin/PinocchioLinkUpdater.h
     include/whole_body_state_rviz_plugin/WholeBodyStateDisplay.h
     include/whole_body_state_rviz_plugin/WholeBodyTrajectoryDisplay.h
@@ -87,6 +89,7 @@ SET(SOURCE_FILES
   src/LineVisual.cpp
   src/ArrowVisual.cpp
   src/PolygonVisual.cpp
+  src/ConeVisual.cpp
   src/PinocchioLinkUpdater.cpp
   src/WholeBodyStateDisplay.cpp
   src/WholeBodyTrajectoryDisplay.cpp

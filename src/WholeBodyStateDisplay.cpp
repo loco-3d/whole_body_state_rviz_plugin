@@ -524,11 +524,9 @@ void WholeBodyStateDisplay::updateFrictionConeColorAndAlpha() {
 
 void WholeBodyStateDisplay::updateFrictionConeGeometry() {
   const float &cone_length = friction_cone_length_property_->getFloat();
-  double cone_width = 2.0 * cone_length * tan(friction_mu_ / sqrt(2.));
-  Ogre::Vector3 scale(cone_width, cone_length, cone_width);
+  const float cone_width = 2.0 * cone_length * tan(friction_mu_ / sqrt(2.));
   for (size_t i = 0; i < cones_visual_.size(); ++i) {
-    cones_visual_[i]->setScale(scale);
-    ;
+    cones_visual_[i]->setProperties(cone_width, cone_length);
   }
   context_->queueRender();
 }
@@ -683,20 +681,24 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       Eigen::Quaterniond cone_q;
       cone_q.setFromTwoVectors(cone_ref_dir, cone_dir);
       Ogre::Quaternion cone_orientation(cone_q.w(), cone_q.x(), cone_q.y(), cone_q.z());
-      boost::shared_ptr<Shape> cone;
-      cone.reset(new rviz::Shape(rviz::Shape::Cone, context_->getSceneManager(), scene_node_));
-      cone->setPosition(contact_pos);
-      cone->setOrientation(cone_orientation);
+      boost::shared_ptr<ConeVisual> cone;
+      cone.reset(new ConeVisual(context_->getSceneManager(), scene_node_));
+      cone->setCone(contact_pos, cone_orientation);
+      cone->setFramePosition(position);
+      cone->setFrameOrientation(orientation);
 
-      double displayed_range = friction_cone_length_property_->getFloat();
-      double cone_width = 2.0 * displayed_range * tan(friction_mu_ / sqrt(2.));
-      Ogre::Vector3 scale(cone_width, displayed_range, cone_width);
+      // Setting the cone color and properties
       Ogre::ColourValue color = friction_cone_color_property_->getOgreColor();
       color.a = friction_cone_alpha_property_->getFloat();
-      cone->setScale(scale);
-      cone->setOffset(Ogre::Vector3(0, -0.5, 0.));
       cone->setColor(color.r, color.g, color.b, color.a);
-      cones_visual_.push_back(cone);
+      const float &cone_length = friction_cone_length_property_->getFloat();
+      const float cone_width = 2.0 * cone_length * tan(friction_mu_ / sqrt(2.));
+      cone->setProperties(cone_width, cone_length);
+
+      // And send it to the end of the vector
+      if (std::isfinite(cone_width) && std::isfinite(cone_length)) {
+        cones_visual_.push_back(cone);
+      }
     }
   }
 

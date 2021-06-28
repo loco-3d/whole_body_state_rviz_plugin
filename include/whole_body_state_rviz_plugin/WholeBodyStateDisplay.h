@@ -23,6 +23,7 @@
 #include "whole_body_state_rviz_plugin/ArrowVisual.h"
 #include "whole_body_state_rviz_plugin/PointVisual.h"
 #include "whole_body_state_rviz_plugin/PolygonVisual.h"
+#include "whole_body_state_rviz_plugin/ConeVisual.h"
 
 namespace Ogre {
 class SceneNode;
@@ -148,7 +149,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   boost::shared_ptr<PointVisual> icp_visual_;
   std::vector<boost::shared_ptr<ArrowVisual>> grf_visual_;
   boost::shared_ptr<PolygonVisual> support_visual_;
-  std::vector<boost::shared_ptr<rviz::Shape>> cones_visual_;
+  std::vector<boost::shared_ptr<ConeVisual>> cones_visual_;
   /**@}*/
 
   /**@{*/
