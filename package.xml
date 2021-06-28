@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>whole_body_state_rviz_plugin</name>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <description>
     Visualization plugins of whole-body state messages
   </description>
