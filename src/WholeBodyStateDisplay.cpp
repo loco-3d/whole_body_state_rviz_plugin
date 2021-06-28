@@ -624,6 +624,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     q(0) = msg_->centroidal.com_position.x - data_.com[0](0);
     q(1) = msg_->centroidal.com_position.y - data_.com[0](1);
     q(2) = msg_->centroidal.com_position.z - data_.com[0](2);
+    robot_->setPosition(position);
+    robot_->setOrientation(orientation);
     robot_->update(PinocchioLinkUpdater(
         model_, data_, q,
         boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));

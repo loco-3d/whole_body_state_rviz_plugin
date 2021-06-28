@@ -19,10 +19,8 @@ namespace whole_body_state_rviz_plugin {
 
 PinocchioLinkUpdater::PinocchioLinkUpdater(
     pinocchio::Model &model, pinocchio::Data &data,
-    const Eigen::Ref<const Eigen::VectorXd> &q, const StatusCallback &status_cb,
-    const std::string &tf_prefix)
-    : model_(model), data_(data), status_callback_(status_cb),
-      tf_prefix_(tf_prefix) {
+    const Eigen::Ref<const Eigen::VectorXd> &q, const StatusCallback &status_cb)
+    : model_(model), data_(data), status_callback_(status_cb) {
   pinocchio::framesForwardKinematics(model_, data_, q);
 }
 

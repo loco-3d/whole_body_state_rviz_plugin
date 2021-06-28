@@ -25,8 +25,7 @@ public:
 
   PinocchioLinkUpdater(pinocchio::Model &model, pinocchio::Data &data,
                        const Eigen::Ref<const Eigen::VectorXd> &q,
-                       const StatusCallback &status_cb = StatusCallback(),
-                       const std::string &tf_prefix = std::string());
+                       const StatusCallback &status_cb = StatusCallback());
 
   bool getLinkTransforms(
       const std::string &link_name, Ogre::Vector3 &visual_position,
@@ -40,7 +39,6 @@ private:
   pinocchio::Model &model_;
   pinocchio::Data &data_;
   StatusCallback status_callback_;
-  std::string tf_prefix_;
 };
 
 } // namespace whole_body_state_rviz_plugin
