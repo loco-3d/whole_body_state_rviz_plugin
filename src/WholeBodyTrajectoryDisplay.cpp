@@ -476,6 +476,8 @@ void WholeBodyTrajectoryDisplay::processTargetPosture() {
     q(0) = state.centroidal.com_position.x - data_.com[0](0);
     q(1) = state.centroidal.com_position.y - data_.com[0](1);
     q(2) = state.centroidal.com_position.z - data_.com[0](2);
+    robot_->setPosition(position);
+    robot_->setOrientation(orientation);
     robot_->update(PinocchioLinkUpdater(model_, data_, q, boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
 
     size_t n_contacts = state.contacts.size();
