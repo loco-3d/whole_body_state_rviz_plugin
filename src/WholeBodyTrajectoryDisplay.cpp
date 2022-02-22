@@ -135,6 +135,7 @@ void WholeBodyTrajectoryDisplay::onInitialize() {
 }
 
 void WholeBodyTrajectoryDisplay::onEnable() {
+  MFDClass::onEnable();
   loadRobotModel();
   updateTargetEnable();
   updateCoMEnable();
@@ -142,6 +143,7 @@ void WholeBodyTrajectoryDisplay::onEnable() {
 }
 
 void WholeBodyTrajectoryDisplay::onDisable() {
+  MFDClass::onDisable();
   robot_->setVisible(false);
   clearRobotModel();
   // Remove all artefacts:
@@ -158,6 +160,7 @@ void WholeBodyTrajectoryDisplay::onDisable() {
 }
 
 void WholeBodyTrajectoryDisplay::fixedFrameChanged() {
+  MFDClass::fixedFrameChanged();
   if (msg_ != nullptr) {
     // Visualization of the base trajectory
     processCoMTrajectory();

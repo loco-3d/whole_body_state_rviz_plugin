@@ -234,6 +234,7 @@ void WholeBodyStateDisplay::onDisable() {
 }
 
 void WholeBodyStateDisplay::fixedFrameChanged() {
+  MFDClass::fixedFrameChanged();
   if (msg_ != nullptr) {
     processWholeBodyState();
   }
