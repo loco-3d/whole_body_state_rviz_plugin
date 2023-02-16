@@ -49,8 +49,8 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   // Category Groups
   robot_category_ = new rviz::Property("Robot", QVariant(), "", this);
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
-  zmp_category_ = new rviz::Property("Center Of Pressure", QVariant(), "", this);
-  cop_category_ = new rviz::Property("Per Foot Center Of Pressure", QVariant(), "", this);
+  zmp_category_ = new rviz::Property("Zero Moment Point", QVariant(), "", this);
+  cop_category_ = new rviz::Property("Center Of Pressure", QVariant(), "", this);
   icp_category_ = new rviz::Property("Instantaneous Capture Point", QVariant(), "", this);
   cmp_category_ = new rviz::Property("Centroidal Momentum Pivot", QVariant(), "", this);
   grf_category_ = new rviz::Property("Contact Forces", QVariant(), "", this);
