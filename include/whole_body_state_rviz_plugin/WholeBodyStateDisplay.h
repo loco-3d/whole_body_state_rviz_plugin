@@ -94,6 +94,8 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   void updateCoMArrowGeometry();
   void updateCoPEnable();
   void updateCoPColorAndAlpha();
+  void updateFootCoPEnable();
+  void updateFootCoPColorAndAlpha();
   void updateICPEnable();
   void updateICPColorAndAlpha();
   void updateCMPEnable();
@@ -101,12 +103,14 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   void updateGRFEnable();
   void updateGRFColorAndAlpha();
   void updateGRFArrowGeometry();
+  void updateGRFOrigin();
   void updateSupportEnable();
   void updateSupportLineColorAndAlpha();
   void updateSupportMeshColorAndAlpha();
   void updateFrictionConeEnable();
   void updateFrictionConeColorAndAlpha();
   void updateFrictionConeGeometry();
+  void updateFrictionConeOrigin();
   /**@}*/
 
  private:
@@ -132,6 +136,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   rviz::Property *robot_category_;
   rviz::Property *com_category_;
   rviz::Property *cop_category_;
+  rviz::Property *foot_cop_category_;
   rviz::Property *cmp_category_;
   rviz::Property *icp_category_;
   rviz::Property *grf_category_;
@@ -150,6 +155,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   std::vector<boost::shared_ptr<ArrowVisual>> grf_visual_;
   boost::shared_ptr<PolygonVisual> support_visual_;
   std::vector<boost::shared_ptr<ConeVisual>> cones_visual_;
+  std::vector<boost::shared_ptr<PointVisual>> foot_cop_visual_;
   /**@}*/
 
   /**@{*/
@@ -173,6 +179,11 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   rviz::ColorProperty *cop_color_property_;
   rviz::FloatProperty *cop_alpha_property_;
   rviz::FloatProperty *cop_radius_property_;
+  rviz::BoolProperty *foot_cop_enable_property_;
+  rviz::BoolProperty *foot_cop_enable_status_property_;
+  rviz::ColorProperty *foot_cop_color_property_;
+  rviz::FloatProperty *foot_cop_alpha_property_;
+  rviz::FloatProperty *foot_cop_radius_property_;
   rviz::BoolProperty *icp_enable_property_;
   rviz::ColorProperty *icp_color_property_;
   rviz::FloatProperty *icp_alpha_property_;
@@ -189,6 +200,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   rviz::FloatProperty *grf_head_length_property_;
   rviz::FloatProperty *grf_shaft_radius_property_;
   rviz::FloatProperty *grf_shaft_length_property_;
+  rviz::BoolProperty *grf_locate_at_foot_cop_property_;
   rviz::BoolProperty *support_enable_property_;
   rviz::BoolProperty *support_enable_status_property_;
   rviz::ColorProperty *support_line_color_property_;
@@ -202,6 +214,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   rviz::ColorProperty *friction_cone_color_property_;
   rviz::FloatProperty *friction_cone_alpha_property_;
   rviz::FloatProperty *friction_cone_length_property_;
+  rviz::BoolProperty *friction_cone_locate_at_foot_cop_property_;
   /**@}*/
 
   /**@{*/
@@ -211,10 +224,14 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   pinocchio::Model model_;
   pinocchio::Data data_;
   double force_threshold_;  //!< Force threshold for detecting active contacts
+  double torque_threshold_; //!< Torque threshold for detecting whether contact is point (3d) or surface (6d)
   bool use_contact_status_in_cop_;
+  bool use_contact_status_in_foot_cop_;
   bool use_contact_status_in_grf_;
   bool use_contact_status_in_support_;
   bool use_contact_status_in_friction_cone_;
+  bool grf_locate_at_foot_cop_;            //!< Whether to locate ground reaction forces at foot center of pressures
+  bool friction_cone_locate_at_foot_cop_;  //!< Whether to locate friction cones at foot center of pressures
   double weight_;
   double gravity_;
   double friction_mu_;
@@ -229,6 +246,8 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   bool robot_enable_;
   bool com_enable_;
   bool cop_enable_;
+  bool foot_cop_enable_;
+  std::vector<Ogre::Vector3> foot_cop_pos_;  //!< Stores locations of the foot center of pressures
   bool icp_enable_;
   bool cmp_enable_;
   bool grf_enable_;
