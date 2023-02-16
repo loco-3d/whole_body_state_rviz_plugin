@@ -102,7 +102,8 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   zmp_enable_property_ =
       new BoolProperty("Enable", true, "Enable/disable the ZMP display", zmp_category_, SLOT(updateZMPEnable()), this);
   zmp_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        zmp_category_, SLOT(updateZMPEnable()), this);
   zmp_color_property_ = new rviz::ColorProperty("Color", QColor(204, 41, 204), "Color of a point", zmp_category_,
                                                 SLOT(updateZMPColorAndAlpha()), this);
@@ -118,7 +119,7 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
       new BoolProperty("Enable", false, "Enable/disable the CoP display", cop_category_, SLOT(updateCoPEnable()), this);
   cop_enable_status_property_ =
       new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active. "
-                       "Otherwise, the force threshold defined for the support region is used to estimate the status",
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        cop_category_, SLOT(updateCoPEnable()), this);
   cop_color_property_ = new rviz::ColorProperty("Color", QColor(204, 41, 204), "Color of a point", cop_category_,
                                                 SLOT(updateCoPColorAndAlpha()), this);
@@ -157,7 +158,8 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   grf_enable_property_ = new BoolProperty("Enable", true, "Enable/disable the contact force display", grf_category_,
                                           SLOT(updateGRFEnable()), this);
   grf_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        grf_category_, SLOT(updateGRFEnable()), this);
   grf_color_property_ = new ColorProperty("Color", QColor(85, 0, 255), "Color to draw the arrow.", grf_category_,
                                           SLOT(updateGRFColorAndAlpha()), this);
@@ -173,14 +175,16 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
                                                 grf_category_, SLOT(updateGRFArrowGeometry()), this);
   grf_head_radius_property_ = new FloatProperty("Head Radius", 0.04, "Radius of the arrow's head, in meters.",
                                                 grf_category_, SLOT(updateGRFArrowGeometry()), this);
-  grf_locate_at_cop_property_ = new BoolProperty("Locate At Center of Pressure", false, "Collocate the ground reaction force with the foot's center of pressure.",
+  grf_locate_at_cop_property_ = new BoolProperty("Locate At Center of Pressure", false,
+                                                 "Collocate the ground reaction force with the foot's center of pressure.",
                                                       grf_category_, SLOT(updateGRFOrigin()), this);
 
   // Support region properties
   support_enable_property_ = new BoolProperty("Enable", true, "Enable/disable the support polygon display",
                                               support_category_, SLOT(updateSupportEnable()), this);
   support_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        support_category_, SLOT(updateSupportEnable()), this);
   support_line_color_property_ = new ColorProperty("Line Color", QColor(85, 0, 255), "Color to draw the line.",
                                                    support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
@@ -204,7 +208,8 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   friction_cone_enable_property_ = new BoolProperty("Enable", true, "Enable/disable the friction cone display",
                                                     friction_category_, SLOT(updateFrictionConeEnable()), this);
   friction_cone_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        friction_category_, SLOT(updateFrictionConeEnable()), this);
   friction_cone_color_property_ = new ColorProperty("Color", QColor(255, 0, 127), "Color to draw the friction cone.",
                                                     friction_category_, SLOT(updateFrictionConeColorAndAlpha()), this);
@@ -215,8 +220,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   friction_cone_alpha_property_->setMax(1);
   friction_cone_length_property_ = new FloatProperty("Length", 0.2, "Length of the friction cone in m.",
                                                      friction_category_, SLOT(updateFrictionConeGeometry()), this);
-  friction_cone_locate_at_cop_property_ = new BoolProperty("Locate Center of Pressure", false, "Collocate the friction cone with the foot's center of pressure.",
-                                                                friction_category_, SLOT(updateFrictionConeOrigin()), this);
+  friction_cone_locate_at_cop_property_ = new BoolProperty("Locate Center of Pressure", false,
+                                                           "Collocate the friction cone with the foot's center of pressure.",
+                                                           friction_category_, SLOT(updateFrictionConeOrigin()), this);
 }
 
 WholeBodyStateDisplay::~WholeBodyStateDisplay() {}
