@@ -44,9 +44,11 @@ clang-format-6.0 -i $(find . -path ./cmake -prune -o -iregex '.*\.\(h\|c\|hh\|cc
 
 ### :writing_hand: Written by
 
-- [Carlos Mastalli](https://cmastalli.github.io/), The University of Edinburgh :uk:
+- [Carlos Mastalli](https://romilab.org) Heriot-Watt University :uk:
 
 
 ### :construction_worker: With contributions from
 
 - [Wolfgang Merkt](http://www.wolfgangmerkt.com/research/), University of Oxford :uk:
+
+and maintained by the Robot Motor Intelligence (RoMI) lab.
