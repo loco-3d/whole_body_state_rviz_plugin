@@ -661,8 +661,13 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     const whole_body_state_msgs::ContactState &contact = msg_->contacts[i];
     std::string name = contact.name;
 
-    // Getting the contact position
+    // Getting the contact position and orientation
     Ogre::Vector3 contact_pos(contact.pose.position.x, contact.pose.position.y, contact.pose.position.z);
+    Eigen::Vector3d contact_ref_dir = -Eigen::Vector3d::UnitY();
+    Eigen::Vector3d contact_dir(contact.surface_normal.x, contact.surface_normal.y, contact.surface_normal.z);
+    Eigen::Quaterniond contact_q;
+    contact_q.setFromTwoVectors(contact_ref_dir, contact_dir);
+    Ogre::Quaternion contact_orientation(contact_q.w(), contact_q.x(), contact_q.y(), contact_q.z());
 
     // Getting the force direction
     Eigen::Vector3d for_ref_dir = -Eigen::Vector3d::UnitZ();
@@ -710,7 +715,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
         cop.reset(new PointVisual(context_->getSceneManager(), scene_node_));
         cop->setPoint(cop_point);
         cop->setFramePosition(contact_pos);
-        cop->setFrameOrientation(orientation);
+        cop->setFrameOrientation(contact_orientation);
 
         // Setting color and properties
         const float &radius = cop_radius_property_->getFloat();
