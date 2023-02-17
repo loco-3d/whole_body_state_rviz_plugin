@@ -27,14 +27,19 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
     : has_new_msg_(false),
       initialized_model_(false),
       force_threshold_(0.),
+      torque_threshold_(0.),
+      use_contact_status_in_zmp_(true),
       use_contact_status_in_cop_(true),
       use_contact_status_in_grf_(true),
       use_contact_status_in_support_(true),
       use_contact_status_in_friction_cone_(true),
+      grf_locate_at_cop_(false),
+      friction_cone_locate_at_cop_(false),
       weight_(0.),
       gravity_(9.81),
       com_real_(true),
       com_enable_(true),
+      zmp_enable_(true),
       cop_enable_(true),
       icp_enable_(true),
       cmp_enable_(true),
@@ -44,6 +49,7 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   // Category Groups
   robot_category_ = new rviz::Property("Robot", QVariant(), "", this);
   com_category_ = new rviz::Property("Center Of Mass", QVariant(), "", this);
+  zmp_category_ = new rviz::Property("Zero Moment Point", QVariant(), "", this);
   cop_category_ = new rviz::Property("Center Of Pressure", QVariant(), "", this);
   icp_category_ = new rviz::Property("Instantaneous Capture Point", QVariant(), "", this);
   cmp_category_ = new rviz::Property("Centroidal Momentum Pivot", QVariant(), "", this);
@@ -92,11 +98,30 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   com_head_radius_property_ = new FloatProperty("Head Radius", 0.04, "Radius of the arrow's head, in meters.",
                                                 com_category_, SLOT(updateCoMArrowGeometry()), this);
 
+  // ZMP properties
+  zmp_enable_property_ =
+      new BoolProperty("Enable", true, "Enable/disable the ZMP display", zmp_category_, SLOT(updateZMPEnable()), this);
+  zmp_enable_status_property_ =
+      new BoolProperty("Use Contact Status", true,
+                       "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
+                       zmp_category_, SLOT(updateZMPEnable()), this);
+  zmp_color_property_ = new rviz::ColorProperty("Color", QColor(204, 41, 204), "Color of a point", zmp_category_,
+                                                SLOT(updateZMPColorAndAlpha()), this);
+  zmp_alpha_property_ = new rviz::FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
+                                                zmp_category_, SLOT(updateZMPColorAndAlpha()), this);
+  zmp_alpha_property_->setMin(0);
+  zmp_alpha_property_->setMax(1);
+  zmp_radius_property_ = new rviz::FloatProperty("Radius", 0.04, "Radius of a point", zmp_category_,
+                                                 SLOT(updateZMPColorAndAlpha()), this);
+
   // CoP properties
   cop_enable_property_ =
       new BoolProperty("Enable", true, "Enable/disable the CoP display", cop_category_, SLOT(updateCoPEnable()), this);
   cop_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true,
+                       "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        cop_category_, SLOT(updateCoPEnable()), this);
   cop_color_property_ = new rviz::ColorProperty("Color", QColor(204, 41, 204), "Color of a point", cop_category_,
                                                 SLOT(updateCoPColorAndAlpha()), this);
@@ -135,7 +160,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   grf_enable_property_ = new BoolProperty("Enable", true, "Enable/disable the contact force display", grf_category_,
                                           SLOT(updateGRFEnable()), this);
   grf_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true,
+                       "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        grf_category_, SLOT(updateGRFEnable()), this);
   grf_color_property_ = new ColorProperty("Color", QColor(85, 0, 255), "Color to draw the arrow.", grf_category_,
                                           SLOT(updateGRFColorAndAlpha()), this);
@@ -151,12 +178,18 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
                                                 grf_category_, SLOT(updateGRFArrowGeometry()), this);
   grf_head_radius_property_ = new FloatProperty("Head Radius", 0.04, "Radius of the arrow's head, in meters.",
                                                 grf_category_, SLOT(updateGRFArrowGeometry()), this);
+  grf_locate_at_cop_property_ =
+      new BoolProperty("Locate At Center of Pressure", false,
+                       "Collocate the ground reaction force with the contact's center of pressure.", grf_category_,
+                       SLOT(updateGRFOrigin()), this);
 
   // Support region properties
   support_enable_property_ = new BoolProperty("Enable", true, "Enable/disable the support polygon display",
                                               support_category_, SLOT(updateSupportEnable()), this);
   support_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true,
+                       "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        support_category_, SLOT(updateSupportEnable()), this);
   support_line_color_property_ = new ColorProperty("Line Color", QColor(85, 0, 255), "Color to draw the line.",
                                                    support_category_, SLOT(updateSupportLineColorAndAlpha()), this);
@@ -180,7 +213,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   friction_cone_enable_property_ = new BoolProperty("Enable", true, "Enable/disable the friction cone display",
                                                     friction_category_, SLOT(updateFrictionConeEnable()), this);
   friction_cone_enable_status_property_ =
-      new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active",
+      new BoolProperty("Use Contact Status", true,
+                       "Use contact status to detect whether a contact is active. "
+                       "Otherwise, the force threshold defined for the support region is used to estimate the status.",
                        friction_category_, SLOT(updateFrictionConeEnable()), this);
   friction_cone_color_property_ = new ColorProperty("Color", QColor(255, 0, 127), "Color to draw the friction cone.",
                                                     friction_category_, SLOT(updateFrictionConeColorAndAlpha()), this);
@@ -191,6 +226,9 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   friction_cone_alpha_property_->setMax(1);
   friction_cone_length_property_ = new FloatProperty("Length", 0.2, "Length of the friction cone in m.",
                                                      friction_category_, SLOT(updateFrictionConeGeometry()), this);
+  friction_cone_locate_at_cop_property_ = new BoolProperty(
+      "Locate At Center of Pressure", false, "Collocate the friction cone with the contact's center of pressure.",
+      friction_category_, SLOT(updateFrictionConeOrigin()), this);
 }
 
 WholeBodyStateDisplay::~WholeBodyStateDisplay() {}
@@ -209,6 +247,7 @@ void WholeBodyStateDisplay::onEnable() {
   loadRobotModel();
   updateRobotEnable();
   updateCoMEnable();
+  updateZMPEnable();
   updateCoPEnable();
   updateICPEnable();
   updateCMPEnable();
@@ -224,7 +263,8 @@ void WholeBodyStateDisplay::onDisable() {
   // Remove all artefacts:
   com_visual_.reset();
   comd_visual_.reset();
-  cop_visual_.reset();
+  zmp_visual_.reset();
+  cop_visual_.clear();
   icp_visual_.reset();
   cmp_visual_.reset();
   grf_visual_.clear();
@@ -244,6 +284,7 @@ void WholeBodyStateDisplay::reset() {
   MFDClass::reset();
   grf_visual_.clear();
   cones_visual_.clear();
+  cop_visual_.clear();
 }
 
 void WholeBodyStateDisplay::loadRobotModel() {
@@ -387,11 +428,31 @@ void WholeBodyStateDisplay::updateCoMArrowGeometry() {
   context_->queueRender();
 }
 
+void WholeBodyStateDisplay::updateZMPEnable() {
+  zmp_enable_ = zmp_enable_property_->getBool();
+  use_contact_status_in_zmp_ = zmp_enable_status_property_->getBool();
+  if (zmp_visual_ && !zmp_enable_) {
+    zmp_visual_.reset();
+  }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateZMPColorAndAlpha() {
+  const float &radius = zmp_radius_property_->getFloat();
+  Ogre::ColourValue color = zmp_color_property_->getOgreColor();
+  color.a = zmp_alpha_property_->getFloat();
+  if (zmp_visual_) {
+    zmp_visual_->setColor(color.r, color.g, color.b, color.a);
+    zmp_visual_->setRadius(radius);
+  }
+  context_->queueRender();
+}
+
 void WholeBodyStateDisplay::updateCoPEnable() {
   cop_enable_ = cop_enable_property_->getBool();
   use_contact_status_in_cop_ = cop_enable_status_property_->getBool();
-  if (cop_visual_ && !cop_enable_) {
-    cop_visual_.reset();
+  if (cop_visual_.size() != 0 && !cop_enable_) {
+    cop_visual_.clear();
   }
   context_->queueRender();
 }
@@ -400,9 +461,9 @@ void WholeBodyStateDisplay::updateCoPColorAndAlpha() {
   const float &radius = cop_radius_property_->getFloat();
   Ogre::ColourValue color = cop_color_property_->getOgreColor();
   color.a = cop_alpha_property_->getFloat();
-  if (cop_visual_) {
-    cop_visual_->setColor(color.r, color.g, color.b, color.a);
-    cop_visual_->setRadius(radius);
+  for (size_t i = 0; i < cop_visual_.size(); ++i) {
+    cop_visual_[i]->setColor(color.r, color.g, color.b, color.a);
+    cop_visual_[i]->setRadius(radius);
   }
   context_->queueRender();
 }
@@ -474,6 +535,11 @@ void WholeBodyStateDisplay::updateGRFArrowGeometry() {
   context_->queueRender();
 }
 
+void WholeBodyStateDisplay::updateGRFOrigin() {
+  grf_locate_at_cop_ = grf_locate_at_cop_property_->getBool();
+  context_->queueRender();
+}
+
 void WholeBodyStateDisplay::updateSupportEnable() {
   support_enable_ = support_enable_property_->getBool();
   use_contact_status_in_support_ = support_enable_status_property_->getBool();
@@ -529,6 +595,11 @@ void WholeBodyStateDisplay::updateFrictionConeGeometry() {
   for (size_t i = 0; i < cones_visual_.size(); ++i) {
     cones_visual_[i]->setProperties(cone_width, cone_length);
   }
+  context_->queueRender();
+}
+
+void WholeBodyStateDisplay::updateFrictionConeOrigin() {
+  friction_cone_locate_at_cop_ = friction_cone_locate_at_cop_property_->getBool();
   context_->queueRender();
 }
 
@@ -588,34 +659,78 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   size_t n_suppcontacts = 0;
   grf_visual_.clear();
   cones_visual_.clear();
-  Eigen::Vector3d cop_pos = Eigen::Vector3d::Zero();
+  cop_visual_.clear();
+  cop_pos_.clear();
+  Eigen::Vector3d zmp_pos = Eigen::Vector3d::Zero();
   Eigen::Vector3d total_force = Eigen::Vector3d::Zero();
   for (size_t i = 0; i < num_contacts; ++i) {
     const whole_body_state_msgs::ContactState &contact = msg_->contacts[i];
     std::string name = contact.name;
 
-    // Getting the contact position
+    // Getting the contact position and orientation
     Ogre::Vector3 contact_pos(contact.pose.position.x, contact.pose.position.y, contact.pose.position.z);
+    Eigen::Vector3d contact_ref_dir = Eigen::Vector3d::UnitZ();
+    Eigen::Vector3d contact_dir(contact.surface_normal.x, contact.surface_normal.y, contact.surface_normal.z);
+    Eigen::Quaterniond contact_q;
+    contact_q.setFromTwoVectors(contact_ref_dir, contact_dir);
+    Ogre::Quaternion contact_orientation(contact_q.w(), contact_q.x(), contact_q.y(), contact_q.z());
 
     // Getting the force direction
     Eigen::Vector3d for_ref_dir = -Eigen::Vector3d::UnitZ();
     Eigen::Vector3d for_dir(contact.wrench.force.x, contact.wrench.force.y, contact.wrench.force.z);
 
-    // Updating the center of pressure
-    bool active_contact_in_cop = false;
-    if (use_contact_status_in_cop_) {
-      active_contact_in_cop = contact.status == contact.ACTIVE;
+    // Updating the ZMP
+    bool active_contact_in_zmp = false;
+    if (use_contact_status_in_zmp_) {
+      active_contact_in_zmp = contact.status == contact.ACTIVE;
     } else {
-      active_contact_in_cop = for_dir.norm() > force_threshold_;
+      active_contact_in_zmp = for_dir.norm() > force_threshold_;
     }
-    if (contact.type == contact.LOCOMOTION && active_contact_in_cop) {
-      cop_pos += contact.wrench.force.z *
+    if (contact.type == contact.LOCOMOTION && active_contact_in_zmp) {
+      zmp_pos += contact.wrench.force.z *
                  Eigen::Vector3d(contact.pose.position.x, contact.pose.position.y, contact.pose.position.z);
       Eigen::Vector3d force_lin =
           Eigen::Vector3d(contact.wrench.force.x, contact.wrench.force.y, contact.wrench.force.z);
       total_force += force_lin;
       if (force_lin.norm() != 0) {
         n_suppcontacts += 1;
+      }
+    }
+
+    // Center of pressure per contact. Mainly targets surface contacts (relatively meaningless for point contacts)
+    bool active_contact_in_cop = false;
+    if (use_contact_status_in_cop_) {
+      active_contact_in_cop = contact.status == contact.ACTIVE;
+    } else {
+      active_contact_in_cop = for_dir.norm() > force_threshold_;
+    }
+    bool is_contact_6d = false;
+    if (std::abs(contact.wrench.torque.x) > torque_threshold_ ||
+        std::abs(contact.wrench.torque.y) > torque_threshold_) {
+      is_contact_6d = true;
+    }
+    if (cop_enable_ && active_contact_in_cop && is_contact_6d) {
+      // NOTE: x component is negative due to right-hand rotation rule
+      Eigen::Vector3d cop_pos = Eigen::Vector3d(-contact.wrench.torque.y / contact.wrench.force.z,
+                                                contact.wrench.torque.x / contact.wrench.force.z,
+                                                0.0);  // Origin of frame is already at contact position
+      if (cop_enable_ && std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) && std::isfinite(cop_pos(2))) {
+        Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
+        cop_pos_.push_back(cop_point);
+        boost::shared_ptr<PointVisual> cop;
+        cop.reset(new PointVisual(context_->getSceneManager(), scene_node_));
+        cop->setPoint(cop_point);
+        cop->setFramePosition(contact_pos);
+        cop->setFrameOrientation(contact_orientation);
+
+        // Setting color and properties
+        const float &radius = cop_radius_property_->getFloat();
+        Ogre::ColourValue color = cop_color_property_->getOgreColor();
+        color.a = cop_alpha_property_->getFloat();
+        cop->setColor(color.r, color.g, color.b, color.a);
+        cop->setRadius(radius);
+
+        cop_visual_.push_back(cop);
       }
     }
 
@@ -636,9 +751,18 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       if (grf_enable_ && active_contact_in_grf) {
         boost::shared_ptr<ArrowVisual> arrow;
         arrow.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
-        arrow->setArrow(contact_pos, contact_for_orientation);
-        arrow->setFramePosition(position);
-        arrow->setFrameOrientation(orientation);
+        if (grf_locate_at_cop_ && cop_enable_ && active_contact_in_cop && is_contact_6d) {
+          // Find the rotation between orientation (robot) and contact_orientation (surface), which we need to add on
+          // to contact_for_orientation to ensure the arrow is pointing in the right direction
+          Ogre::Quaternion surface_rotation_adjustment = orientation * contact_orientation.Inverse();
+          arrow->setArrow(cop_pos_[i], surface_rotation_adjustment * contact_for_orientation);
+          arrow->setFramePosition(contact_pos);
+          arrow->setFrameOrientation(contact_orientation);
+        } else {
+          arrow->setArrow(contact_pos, contact_for_orientation);
+          arrow->setFramePosition(position);
+          arrow->setFrameOrientation(orientation);
+        }
 
         // Setting the arrow color and properties
         Ogre::ColourValue color = grf_color_property_->getOgreColor();
@@ -684,9 +808,18 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       Ogre::Quaternion cone_orientation(cone_q.w(), cone_q.x(), cone_q.y(), cone_q.z());
       boost::shared_ptr<ConeVisual> cone;
       cone.reset(new ConeVisual(context_->getSceneManager(), scene_node_));
-      cone->setCone(contact_pos, cone_orientation);
-      cone->setFramePosition(position);
-      cone->setFrameOrientation(orientation);
+      if (friction_cone_locate_at_cop_ && cop_enable_ && active_contact_in_cop && is_contact_6d) {
+        // Find the rotation between orientation (robot) and contact_orientation (surface), which we need to add on
+        // to contact_for_orientation to ensure the arrow is pointing in the right direction
+        Ogre::Quaternion surface_rotation_adjustment = orientation * contact_orientation.Inverse();
+        cone->setCone(cop_pos_[i], surface_rotation_adjustment * cone_orientation);
+        cone->setFramePosition(contact_pos);
+        cone->setFrameOrientation(contact_orientation);
+      } else {
+        cone->setCone(contact_pos, cone_orientation);
+        cone->setFramePosition(position);
+        cone->setFrameOrientation(orientation);
+      }
 
       // Setting the cone color and properties
       Ogre::ColourValue color = friction_cone_color_property_->getOgreColor();
@@ -703,16 +836,16 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     }
   }
 
-  // Building the CoP visual
+  // Building the ZMP visual
   if (n_suppcontacts != 0) {
-    cop_pos /= total_force(2);
+    zmp_pos /= total_force(2);
   }
 
   // Defining the center of mass as Ogre::Vector3
   Ogre::Vector3 com_point;
   if (!com_real_ && n_suppcontacts != 0) {
     Eigen::Vector3d cop_z = Eigen::Vector3d::Zero();
-    cop_z(2) = cop_pos(2);
+    cop_z(2) = zmp_pos(2);
     pinocchio::SE3::Quaternion q(msg_->centroidal.base_orientation.w, msg_->centroidal.base_orientation.x,
                                  msg_->centroidal.base_orientation.y, msg_->centroidal.base_orientation.z);
     Eigen::Vector3d rot_cop_z = q.matrix() * cop_z;
@@ -755,8 +888,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
   // Now set or update the contents of the chosen CoP visual
   if (n_suppcontacts != 0) {
-    if (cop_enable_) {
-      cop_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
+    if (zmp_enable_) {
+      zmp_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
     }
     if (icp_enable_) {
       icp_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
@@ -765,21 +898,21 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       cmp_visual_.reset(new PointVisual(context_->getSceneManager(), scene_node_));
     }
 
-    if (cop_enable_ && std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) && std::isfinite(cop_pos(2))) {
-      updateCoPColorAndAlpha();
-      Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
-      cop_visual_->setPoint(cop_point);
-      cop_visual_->setFramePosition(position);
-      cop_visual_->setFrameOrientation(orientation);
+    if (zmp_enable_ && std::isfinite(zmp_pos(0)) && std::isfinite(zmp_pos(1)) && std::isfinite(zmp_pos(2))) {
+      updateZMPColorAndAlpha();
+      Ogre::Vector3 cop_point(zmp_pos(0), zmp_pos(1), zmp_pos(2));
+      zmp_visual_->setPoint(cop_point);
+      zmp_visual_->setFramePosition(position);
+      zmp_visual_->setFrameOrientation(orientation);
     }
 
     // Computing the ICP
-    double height = abs(msg_->centroidal.com_position.z - cop_pos(2));
+    double height = abs(msg_->centroidal.com_position.z - zmp_pos(2));
     double omega = sqrt(gravity_ / height);
     Eigen::Vector3d com_pos = Eigen::Vector3d(msg_->centroidal.com_position.x, msg_->centroidal.com_position.y,
                                               msg_->centroidal.com_position.z);
     Eigen::Vector3d icp_pos = com_pos + com_vel / omega;
-    icp_pos(2) = cop_pos(2);
+    icp_pos(2) = zmp_pos(2);
 
     // Now set or update the contents of the chosen Inst CP visual
     if (icp_enable_ && std::isfinite(icp_pos(0)) && std::isfinite(icp_pos(1)) && std::isfinite(icp_pos(2))) {
@@ -803,8 +936,8 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       cmp_visual_->setFrameOrientation(orientation);
     }
   } else {
-    if (cop_visual_) {
-      cop_visual_.reset();
+    if (zmp_visual_) {
+      zmp_visual_.reset();
     }
     if (icp_visual_) {
       icp_visual_.reset();

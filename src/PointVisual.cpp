@@ -38,14 +38,7 @@ PointVisual::~PointVisual() {
   scene_manager_->destroySceneNode(frame_node_);
 }
 
-void PointVisual::setPoint(const Ogre::Vector3 &point) {
-  Ogre::Vector3 scale(radius_, radius_, radius_);
-  point_->setScale(scale);
-
-  // Set the orientation of the arrow to match the direction of the acceleration
-  // vector.
-  point_->setPosition(point);
-}
+void PointVisual::setPoint(const Ogre::Vector3 &point) { point_->setPosition(point); }
 
 void PointVisual::setFramePosition(const Ogre::Vector3 &position) { frame_node_->setPosition(position); }
 
@@ -55,6 +48,11 @@ void PointVisual::setFrameOrientation(const Ogre::Quaternion &orientation) {
 
 void PointVisual::setColor(float r, float g, float b, float a) { point_->setColor(r, g, b, a); }
 
-void PointVisual::setRadius(float r) { radius_ = r; }
+void PointVisual::setRadius(float r) {
+  radius_ = r;
+
+  Ogre::Vector3 scale(radius_, radius_, radius_);
+  point_->setScale(scale);
+}
 
 }  // namespace whole_body_state_rviz_plugin

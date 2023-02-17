@@ -92,6 +92,8 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   void updateCoMStyle();
   void updateCoMColorAndAlpha();
   void updateCoMArrowGeometry();
+  void updateZMPEnable();
+  void updateZMPColorAndAlpha();
   void updateCoPEnable();
   void updateCoPColorAndAlpha();
   void updateICPEnable();
@@ -101,12 +103,14 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   void updateGRFEnable();
   void updateGRFColorAndAlpha();
   void updateGRFArrowGeometry();
+  void updateGRFOrigin();
   void updateSupportEnable();
   void updateSupportLineColorAndAlpha();
   void updateSupportMeshColorAndAlpha();
   void updateFrictionConeEnable();
   void updateFrictionConeColorAndAlpha();
   void updateFrictionConeGeometry();
+  void updateFrictionConeOrigin();
   /**@}*/
 
  private:
@@ -131,6 +135,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   /** Properties to show on side panel */
   rviz::Property *robot_category_;
   rviz::Property *com_category_;
+  rviz::Property *zmp_category_;
   rviz::Property *cop_category_;
   rviz::Property *cmp_category_;
   rviz::Property *icp_category_;
@@ -144,12 +149,13 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   boost::shared_ptr<rviz::Robot> robot_;
   boost::shared_ptr<PointVisual> com_visual_;
   boost::shared_ptr<ArrowVisual> comd_visual_;
-  boost::shared_ptr<PointVisual> cop_visual_;
+  boost::shared_ptr<PointVisual> zmp_visual_;
   boost::shared_ptr<PointVisual> cmp_visual_;
   boost::shared_ptr<PointVisual> icp_visual_;
   std::vector<boost::shared_ptr<ArrowVisual>> grf_visual_;
   boost::shared_ptr<PolygonVisual> support_visual_;
   std::vector<boost::shared_ptr<ConeVisual>> cones_visual_;
+  std::vector<boost::shared_ptr<PointVisual>> cop_visual_;
   /**@}*/
 
   /**@{*/
@@ -168,6 +174,11 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   rviz::FloatProperty *com_head_length_property_;
   rviz::FloatProperty *com_shaft_radius_property_;
   rviz::FloatProperty *com_shaft_length_property_;
+  rviz::BoolProperty *zmp_enable_property_;
+  rviz::BoolProperty *zmp_enable_status_property_;
+  rviz::ColorProperty *zmp_color_property_;
+  rviz::FloatProperty *zmp_alpha_property_;
+  rviz::FloatProperty *zmp_radius_property_;
   rviz::BoolProperty *cop_enable_property_;
   rviz::BoolProperty *cop_enable_status_property_;
   rviz::ColorProperty *cop_color_property_;
@@ -189,6 +200,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   rviz::FloatProperty *grf_head_length_property_;
   rviz::FloatProperty *grf_shaft_radius_property_;
   rviz::FloatProperty *grf_shaft_length_property_;
+  rviz::BoolProperty *grf_locate_at_cop_property_;
   rviz::BoolProperty *support_enable_property_;
   rviz::BoolProperty *support_enable_status_property_;
   rviz::ColorProperty *support_line_color_property_;
@@ -202,6 +214,7 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   rviz::ColorProperty *friction_cone_color_property_;
   rviz::FloatProperty *friction_cone_alpha_property_;
   rviz::FloatProperty *friction_cone_length_property_;
+  rviz::BoolProperty *friction_cone_locate_at_cop_property_;
   /**@}*/
 
   /**@{*/
@@ -210,11 +223,15 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   bool initialized_model_;
   pinocchio::Model model_;
   pinocchio::Data data_;
-  double force_threshold_;  //!< Force threshold for detecting active contacts
+  double force_threshold_;   //!< Force threshold for detecting active contacts
+  double torque_threshold_;  //!< Torque threshold for detecting whether contact is point (3d) or surface (6d)
+  bool use_contact_status_in_zmp_;
   bool use_contact_status_in_cop_;
   bool use_contact_status_in_grf_;
   bool use_contact_status_in_support_;
   bool use_contact_status_in_friction_cone_;
+  bool grf_locate_at_cop_;            //!< Whether to locate ground reaction forces at foot center of pressures
+  bool friction_cone_locate_at_cop_;  //!< Whether to locate friction cones at foot center of pressures
   double weight_;
   double gravity_;
   double friction_mu_;
@@ -228,7 +245,9 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   /** Flag that indicates if the category are enable */
   bool robot_enable_;
   bool com_enable_;
+  bool zmp_enable_;
   bool cop_enable_;
+  std::vector<Ogre::Vector3> cop_pos_;  //!< Stores locations of the foot center of pressures
   bool icp_enable_;
   bool cmp_enable_;
   bool grf_enable_;
