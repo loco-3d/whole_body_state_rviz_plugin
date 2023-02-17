@@ -223,8 +223,8 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   bool initialized_model_;
   pinocchio::Model model_;
   pinocchio::Data data_;
-  double force_threshold_;  //!< Force threshold for detecting active contacts
-  double torque_threshold_; //!< Torque threshold for detecting whether contact is point (3d) or surface (6d)
+  double force_threshold_;   //!< Force threshold for detecting active contacts
+  double torque_threshold_;  //!< Torque threshold for detecting whether contact is point (3d) or surface (6d)
   bool use_contact_status_in_zmp_;
   bool use_contact_status_in_cop_;
   bool use_contact_status_in_grf_;
