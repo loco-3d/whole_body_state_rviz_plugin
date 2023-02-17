@@ -663,7 +663,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
 
     // Getting the contact position and orientation
     Ogre::Vector3 contact_pos(contact.pose.position.x, contact.pose.position.y, contact.pose.position.z);
-    Eigen::Vector3d contact_ref_dir = -Eigen::Vector3d::UnitY();
+    Eigen::Vector3d contact_ref_dir = Eigen::Vector3d::UnitZ();
     Eigen::Vector3d contact_dir(contact.surface_normal.x, contact.surface_normal.y, contact.surface_normal.z);
     Eigen::Quaterniond contact_q;
     contact_q.setFromTwoVectors(contact_ref_dir, contact_dir);
@@ -746,9 +746,12 @@ void WholeBodyStateDisplay::processWholeBodyState() {
         boost::shared_ptr<ArrowVisual> arrow;
         arrow.reset(new ArrowVisual(context_->getSceneManager(), scene_node_));
         if (grf_locate_at_cop_ && cop_enable_ && active_contact_in_cop && is_contact_6d) {
-          arrow->setArrow(cop_pos_[i], contact_for_orientation);
+          // Find the rotation between orientation (robot) and contact_orientation (surface), which we need to add on
+          // to contact_for_orientation to ensure the arrow is pointing in the right direction
+          Ogre::Quaternion surface_rotation_adjustment = orientation * contact_orientation.Inverse();
+          arrow->setArrow(cop_pos_[i], surface_rotation_adjustment * contact_for_orientation);
           arrow->setFramePosition(contact_pos);
-          arrow->setFrameOrientation(orientation);
+          arrow->setFrameOrientation(contact_orientation);
         } else {
           arrow->setArrow(contact_pos, contact_for_orientation);
           arrow->setFramePosition(position);
@@ -800,9 +803,12 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       boost::shared_ptr<ConeVisual> cone;
       cone.reset(new ConeVisual(context_->getSceneManager(), scene_node_));
       if (friction_cone_locate_at_cop_ && cop_enable_ && active_contact_in_cop && is_contact_6d) {
-        cone->setCone(cop_pos_[i], cone_orientation);
+        // Find the rotation between orientation (robot) and contact_orientation (surface), which we need to add on
+        // to contact_for_orientation to ensure the arrow is pointing in the right direction
+        Ogre::Quaternion surface_rotation_adjustment = orientation * contact_orientation.Inverse();
+        cone->setCone(cop_pos_[i], surface_rotation_adjustment * cone_orientation);
         cone->setFramePosition(contact_pos);
-        cone->setFrameOrientation(orientation);
+        cone->setFrameOrientation(contact_orientation);
       } else {
         cone->setCone(contact_pos, cone_orientation);
         cone->setFramePosition(position);
