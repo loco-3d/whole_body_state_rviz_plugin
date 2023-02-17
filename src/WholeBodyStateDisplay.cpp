@@ -116,7 +116,7 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
 
   // CoP properties
   cop_enable_property_ =
-      new BoolProperty("Enable", false, "Enable/disable the CoP display", cop_category_, SLOT(updateCoPEnable()), this);
+      new BoolProperty("Enable", true, "Enable/disable the CoP display", cop_category_, SLOT(updateCoPEnable()), this);
   cop_enable_status_property_ =
       new BoolProperty("Use Contact Status", true, "Use contact status to detect whether a contact is active. "
                        "Otherwise, the force threshold defined for the support region is used to estimate the status.",
@@ -175,7 +175,7 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
                                                 grf_category_, SLOT(updateGRFArrowGeometry()), this);
   grf_head_radius_property_ = new FloatProperty("Head Radius", 0.04, "Radius of the arrow's head, in meters.",
                                                 grf_category_, SLOT(updateGRFArrowGeometry()), this);
-  grf_locate_at_cop_property_ = new BoolProperty("Locate At Center of Pressure", false,
+  grf_locate_at_cop_property_ = new BoolProperty("Locate At Center of Pressure", true,
                                                  "Collocate the ground reaction force with the foot's center of pressure.",
                                                       grf_category_, SLOT(updateGRFOrigin()), this);
 
@@ -220,7 +220,7 @@ WholeBodyStateDisplay::WholeBodyStateDisplay()
   friction_cone_alpha_property_->setMax(1);
   friction_cone_length_property_ = new FloatProperty("Length", 0.2, "Length of the friction cone in m.",
                                                      friction_category_, SLOT(updateFrictionConeGeometry()), this);
-  friction_cone_locate_at_cop_property_ = new BoolProperty("Locate Center of Pressure", false,
+  friction_cone_locate_at_cop_property_ = new BoolProperty("Locate Center of Pressure", true,
                                                            "Collocate the friction cone with the foot's center of pressure.",
                                                            friction_category_, SLOT(updateFrictionConeOrigin()), this);
 }
