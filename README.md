@@ -50,5 +50,6 @@ clang-format-6.0 -i $(find . -path ./cmake -prune -o -iregex '.*\.\(h\|c\|hh\|cc
 ### :construction_worker: With contributions from
 
 - [Wolfgang Merkt](http://www.wolfgangmerkt.com/research/), University of Oxford :uk:
+- [James Foster](https://www.ihmc.us/groups/james-foster/), Institute for Human and Machine Cognition :us:
 
 and maintained by the Robot Motor Intelligence (RoMI) lab.
