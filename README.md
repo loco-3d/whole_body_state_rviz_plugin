@@ -1,5 +1,4 @@
-Whole-body state Rviz plugins
-==============================================
+# Whole-body state Rviz plugins
 
 ## <img align="center" height="20" src="https://i.imgur.com/vAYeCzC.png"/> Introduction
 
@@ -8,19 +7,21 @@ This repository includes Rviz plugins to display the whole-body state and trajec
 ![output](https://user-images.githubusercontent.com/3601935/89519116-c6b45600-d7d3-11ea-89a0-fc8df97df2f0.gif)
 
 The whole-body state plugin displays
-  1. the position and velocity of center of mass,
-  2. the contact forces,
-  3. the center of pressure,
-  4. the instantaneous capture point,
-  5. the friction cone, and
-  6. the support polygon.
+
+1. the position and velocity of center of mass,
+1. the contact forces,
+1. the center of pressure,
+1. the instantaneous capture point,
+1. the friction cone, and
+1. the support polygon.
 
 Instead, the whole-body trajectory plugin displays
- 1. the center of mass trajectory and body orientation,
- 2. the swing trajectory and its orientation, and
- 3. the target posture and contact forces.
 
-In the whole-body state plugin is possible to configure the diplay of the center of mass information in such a way that is projected in the support polygon. In both plugins, the contact forces are normalized according to the robot's weights. Furthermore, it is possible 
+1. the center of mass trajectory and body orientation,
+1. the swing trajectory and its orientation, and
+1. the target posture and contact forces.
+
+In the whole-body state plugin is possible to configure the diplay of the center of mass information in such a way that is projected in the support polygon. In both plugins, the contact forces are normalized according to the robot's weights. Furthermore, it is possible
 
 All visuals are configurable through Rviz GUI. For example, the user can configure the color and the dimension of points, arrows and cones. Additionally, the user can select different lines style display.
 
@@ -28,14 +29,17 @@ All visuals are configurable through Rviz GUI. For example, the user can configu
 
 1. Installation pinocchio from any source (ros / robotpkg binaries or source)
 
-2. Building the whole_body_state_msgs and these packages in your catkin workspace:
-    ```bash
-	cd your_ros_ws/
-	catkin build #catkin_make
-    ```
+1. Building the whole_body_state_msgs and these packages in your catkin workspace:
+
+   ```bash
+   cd your_ros_ws/
+   catkin build #catkin_make
+   ```
 
 ## Formatting
+
 Run the following in the root of the project:
+
 ```
 clang-format-6.0 -i $(find . -path ./cmake -prune -o -iregex '.*\.\(h\|c\|hh\|cc\|hpp\|cpp\|hxx\|cxx\)$' -print)
 ```
@@ -45,7 +49,6 @@ clang-format-6.0 -i $(find . -path ./cmake -prune -o -iregex '.*\.\(h\|c\|hh\|cc
 ### :writing_hand: Written by
 
 - [Carlos Mastalli](https://romilab.org) Heriot-Watt University :uk:
-
 
 ### :construction_worker: With contributions from
 

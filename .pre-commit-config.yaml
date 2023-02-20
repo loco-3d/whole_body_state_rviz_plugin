@@ -1,0 +1,27 @@
+---
+ci:
+  autoupdate_branch: "master"
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v15.0.6
+    hooks:
+      - id: clang-format
+        args: [-i, --style=file]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-json
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.16
+    hooks:
+      - id: mdformat
+  - repo: https://github.com/psf/black
+    rev: 22.12.0
+    hooks:
+      - id: black
