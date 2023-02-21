@@ -3,7 +3,7 @@ ci:
   autoupdate_branch: "master"
 repos:
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v15.0.6
+    rev: v15.0.7
     hooks:
       - id: clang-format
         args: [-i, --style=file]
@@ -22,6 +22,6 @@ repos:
     hooks:
       - id: mdformat
   - repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.1.0
     hooks:
       - id: black
