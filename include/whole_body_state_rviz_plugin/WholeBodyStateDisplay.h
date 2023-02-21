@@ -247,7 +247,6 @@ class WholeBodyStateDisplay : public rviz::MessageFilterDisplay<whole_body_state
   bool com_enable_;
   bool zmp_enable_;
   bool cop_enable_;
-  std::vector<Ogre::Vector3> cop_pos_;  //!< Stores locations of the foot center of pressures
   bool icp_enable_;
   bool cmp_enable_;
   bool grf_enable_;

@@ -660,7 +660,6 @@ void WholeBodyStateDisplay::processWholeBodyState() {
   grf_visual_.clear();
   cones_visual_.clear();
   cop_visual_.clear();
-  cop_pos_.clear();
   Eigen::Vector3d zmp_pos = Eigen::Vector3d::Zero();
   Eigen::Vector3d total_force = Eigen::Vector3d::Zero();
   for (size_t i = 0; i < num_contacts; ++i) {
@@ -678,6 +677,13 @@ void WholeBodyStateDisplay::processWholeBodyState() {
     // Getting the force direction
     Eigen::Vector3d for_ref_dir = -Eigen::Vector3d::UnitZ();
     Eigen::Vector3d for_dir(contact.wrench.force.x, contact.wrench.force.y, contact.wrench.force.z);
+
+    // Getting the contact's center of pressure
+    // NOTE: x component is negative due to right-hand rotation rule
+    Eigen::Vector3d cop_pos = Eigen::Vector3d(-contact.wrench.torque.y / contact.wrench.force.z,
+                                              contact.wrench.torque.x / contact.wrench.force.z,
+                                              0.0);  // Origin of frame is already at contact position
+    Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
 
     // Updating the ZMP
     bool active_contact_in_zmp = false;
@@ -710,13 +716,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
       is_contact_6d = true;
     }
     if (cop_enable_ && active_contact_in_cop && is_contact_6d) {
-      // NOTE: x component is negative due to right-hand rotation rule
-      Eigen::Vector3d cop_pos = Eigen::Vector3d(-contact.wrench.torque.y / contact.wrench.force.z,
-                                                contact.wrench.torque.x / contact.wrench.force.z,
-                                                0.0);  // Origin of frame is already at contact position
-      if (cop_enable_ && std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) && std::isfinite(cop_pos(2))) {
-        Ogre::Vector3 cop_point(cop_pos(0), cop_pos(1), cop_pos(2));
-        cop_pos_.push_back(cop_point);
+      if (std::isfinite(cop_pos(0)) && std::isfinite(cop_pos(1)) && std::isfinite(cop_pos(2))) {
         boost::shared_ptr<PointVisual> cop;
         cop.reset(new PointVisual(context_->getSceneManager(), scene_node_));
         cop->setPoint(cop_point);
@@ -755,7 +755,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
           // Find the rotation between orientation (robot) and contact_orientation (surface), which we need to add on
           // to contact_for_orientation to ensure the arrow is pointing in the right direction
           Ogre::Quaternion surface_rotation_adjustment = orientation * contact_orientation.Inverse();
-          arrow->setArrow(cop_pos_[i], surface_rotation_adjustment * contact_for_orientation);
+          arrow->setArrow(cop_point, surface_rotation_adjustment * contact_for_orientation);
           arrow->setFramePosition(contact_pos);
           arrow->setFrameOrientation(contact_orientation);
         } else {
@@ -812,7 +812,7 @@ void WholeBodyStateDisplay::processWholeBodyState() {
         // Find the rotation between orientation (robot) and contact_orientation (surface), which we need to add on
         // to contact_for_orientation to ensure the arrow is pointing in the right direction
         Ogre::Quaternion surface_rotation_adjustment = orientation * contact_orientation.Inverse();
-        cone->setCone(cop_pos_[i], surface_rotation_adjustment * cone_orientation);
+        cone->setCone(cop_point, surface_rotation_adjustment * cone_orientation);
         cone->setFramePosition(contact_pos);
         cone->setFrameOrientation(contact_orientation);
       } else {
