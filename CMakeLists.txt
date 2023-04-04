@@ -7,7 +7,8 @@ SET(PROJECT_DESCRIPTION "Whole-body state rviz plugin")
 
 # Print initial message (STATUS to avoid triggering warnings)
 MESSAGE(STATUS "${PROJECT_DESCRIPTION}, version ${PROJECT_VERSION}")
-MESSAGE(STATUS "Copyright (C) 2020-2021 University of Edinburgh, Istituto Italiano di Tecnologia, University of Oxford")
+MESSAGE(STATUS "Copyright (C) 2020-2023 Heriot-Watt Unversity, University of Edinburgh")
+MESSAGE(STATUS "                        Istituto Italiano di Tecnologia, University of Oxford")
 MESSAGE(STATUS "All rights reserved.")
 MESSAGE(STATUS "Released under the BSD 3-Clause License.")
 
@@ -41,7 +42,7 @@ FIND_PACKAGE(pinocchio REQUIRED)
 
 IF(rviz_QT_VERSION VERSION_LESS "5")
   MESSAGE(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  FIND_PACKAGE(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
+  FIND_PACKAGE(Qt4 ${rviz_QT_VERSION} REQUIRED QtCore QtGui)
   ## pull in all required include dirs, define QT_LIBRARIES, etc.
   INCLUDE(${QT_USE_FILE})
 
@@ -57,7 +58,7 @@ IF(rviz_QT_VERSION VERSION_LESS "5")
     OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
 ELSE()
   MESSAGE(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  FIND_PACKAGE(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
+  FIND_PACKAGE(Qt5 ${rviz_QT_VERSION} REQUIRED Core Widgets)
   ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
   SET(QT_LIBRARIES Qt5::Widgets)
 
